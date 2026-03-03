@@ -24,7 +24,8 @@ WORKDIR /app
 COPY backend/ .
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Configs
+# Configs — remove Debian default site, use our config
+RUN rm -f /etc/nginx/sites-enabled/default
 COPY nginx/production.conf /etc/nginx/conf.d/default.conf
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY entrypoint.production.sh /entrypoint.sh
