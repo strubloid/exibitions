@@ -1,3 +1,4 @@
+import { useGsapAnimation } from '../../hooks/useGsapAnimation'
 import type { Artwork } from '../../store/artworksSlice'
 import styles from './ArtworkSection.module.scss'
 
@@ -11,19 +12,24 @@ export default function ArtworkSection({ artwork, index }: Props) {
   const bgColor = palette[0] ?? '#0a0a0a'
   const accentColor = palette[1] ?? '#1a1a1a'
 
+  const { sectionRef, imageRef, contentRef, numberRef } = useGsapAnimation(
+    artwork.animation_style
+  )
+
   return (
     <section
+      ref={sectionRef}
       className={styles.section}
       style={{ '--bg': bgColor, '--accent': accentColor } as React.CSSProperties}
       data-animation={artwork.animation_style}
       data-index={index}
     >
       <div className={styles.inner}>
-        <span className={styles.number}>
+        <span ref={numberRef} className={styles.number}>
           {String(index + 1).padStart(2, '0')}
         </span>
 
-        <div className={styles.imagePlaceholder}>
+        <div ref={imageRef} className={styles.imagePlaceholder}>
           {artwork.image ? (
             <img src={artwork.image} alt={artwork.title} />
           ) : (
@@ -31,7 +37,7 @@ export default function ArtworkSection({ artwork, index }: Props) {
           )}
         </div>
 
-        <div className={styles.content}>
+        <div ref={contentRef} className={styles.content}>
           <h2 className={styles.title}>{artwork.title}</h2>
           {artwork.description && (
             <p className={styles.description}>{artwork.description}</p>
