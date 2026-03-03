@@ -18,6 +18,12 @@ if [ ! -f /app/.env ]; then
   cp /app/.env.example /app/.env
 fi
 
+# Configure app settings
+sed -i "s/^#\? *APP_NAME=.*/APP_NAME=${APP_NAME:-Exibitions}/" /app/.env
+sed -i "s/^#\? *APP_ENV=.*/APP_ENV=${APP_ENV:-local}/" /app/.env
+sed -i "s/^#\? *APP_DEBUG=.*/APP_DEBUG=${APP_DEBUG:-true}/" /app/.env
+sed -i "s/^#\? *APP_URL=.*/APP_URL=${APP_URL:-http:\/\/localhost:8080}/" /app/.env
+
 # Configure DB connection (handles both commented and uncommented lines)
 sed -i "s/^#\? *DB_CONNECTION=.*/DB_CONNECTION=${DB_CONNECTION:-pgsql}/" /app/.env
 sed -i "s/^#\? *DB_HOST=.*/DB_HOST=${DB_HOST:-db}/" /app/.env
