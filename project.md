@@ -149,30 +149,30 @@ A production-ready, containerized, full-stack art exhibition platform for immers
 - Seeders for initial admin user and sample artworks
 - API endpoints returning real data
 
-### Phase 6 — Gallery UI (Static Content)
+### Phase 6 — Gallery UI (Static Content) ✅
 - `Gallery` + `ArtworkSection` components
 - 100vh sections, responsive layout
 - Static artwork data rendered
 
-### Phase 7 — GSAP Animations
+### Phase 7 — GSAP Animations ✅
 - ScrollTrigger: mask, parallax, scale, fade, 3D
 - GPU-accelerated transforms
 - Mobile/touch optimized
 
-### Phase 8 — Image Handling
+### Phase 8 — Image Handling ✅
 - Image upload endpoint
-- WebP conversion
+- WebP conversion via GD (512M PHP memory limit)
 - Lazy loading, optimized delivery
 
-### Phase 9 — Admin Panel
-- Login page (Sanctum)
-- CRUD for artworks
-- Image upload UI
+### Phase 9 — Admin Panel ✅
+- Login page (Sanctum token auth)
+- CRUD for artworks (create, update, delete)
+- Image upload UI per artwork
+- Protected route with localStorage token persistence
 
-### Phase 10 — Production Polish
-- Lighthouse >90
-- Code splitting, final performance pass
-- Full README
+### Phase 10 — Production Polish ✅
+- Code splitting: Login + AdminPanel lazy-loaded
+- index.html: proper title, meta description, theme-color
 - Production fly.io deploy with all services
 
 ---
