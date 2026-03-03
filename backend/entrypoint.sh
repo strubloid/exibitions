@@ -42,4 +42,5 @@ if ! grep -q "laravel/sanctum" /app/composer.json; then
 fi
 
 echo "==> Starting Laravel..."
+
 exec php artisan serve --host=0.0.0.0 --port=8000
