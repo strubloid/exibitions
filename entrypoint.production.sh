@@ -34,5 +34,11 @@ fi
 php artisan config:clear
 php artisan route:cache
 
+# Run migrations if DB is configured
+if [ -n "$DB_HOST" ]; then
+  php artisan migrate --force --no-interaction
+  php artisan db:seed --force --no-interaction
+fi
+
 echo "==> Starting production services..."
 exec supervisord -c /etc/supervisor/conf.d/supervisord.conf

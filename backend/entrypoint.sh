@@ -41,6 +41,10 @@ if ! grep -q "laravel/sanctum" /app/composer.json; then
   php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider" --no-interaction
 fi
 
+# Run migrations and seed
+php artisan migrate --force --no-interaction
+php artisan db:seed --force --no-interaction
+
 echo "==> Starting Laravel..."
 
 exec php artisan serve --host=0.0.0.0 --port=8000
