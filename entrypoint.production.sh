@@ -1,6 +1,15 @@
 #!/bin/sh
 set -e
 
+# Parse DATABASE_URL into individual vars if DB_HOST not set
+if [ -z "$DB_HOST" ] && [ -n "$DATABASE_URL" ]; then
+  DB_USERNAME=$(echo "$DATABASE_URL" | sed 's|.*://\([^:]*\):.*|\1|')
+  DB_PASSWORD=$(echo "$DATABASE_URL" | sed 's|.*://[^:]*:\([^@]*\)@.*|\1|')
+  DB_HOST=$(echo "$DATABASE_URL" | sed 's|.*@\([^:]*\):.*|\1|')
+  DB_PORT=$(echo "$DATABASE_URL" | sed 's|.*:\([0-9]*\)/.*|\1|')
+  DB_DATABASE=$(echo "$DATABASE_URL" | sed 's|.*/\([^?]*\).*|\1|')
+fi
+
 # Write Laravel .env from fly.io secrets / environment variables
 cat > /app/.env << EOF
 APP_NAME=${APP_NAME:-Exibitions}
