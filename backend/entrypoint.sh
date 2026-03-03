@@ -44,6 +44,7 @@ fi
 # Run migrations and seed
 php artisan migrate --force --no-interaction
 php artisan db:seed --force --no-interaction
+php artisan storage:link --force
 
 echo "==> Starting Laravel..."
 

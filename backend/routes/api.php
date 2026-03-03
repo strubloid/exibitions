@@ -12,3 +12,4 @@ Route::get('/health', function () {
 });
 
 Route::get('/artworks', [ArtworkController::class, 'index']);
+Route::post('/artworks/{artwork}/image', [ArtworkController::class, 'uploadImage']);

@@ -49,5 +49,7 @@ if [ -n "$DB_HOST" ]; then
   php artisan db:seed --force --no-interaction
 fi
 
+php artisan storage:link --force
+
 echo "==> Starting production services..."
 exec supervisord -c /etc/supervisor/conf.d/supervisord.conf

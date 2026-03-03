@@ -31,7 +31,12 @@ export default function ArtworkSection({ artwork, index }: Props) {
 
         <div ref={imageRef} className={styles.imagePlaceholder}>
           {artwork.image ? (
-            <img src={artwork.image} alt={artwork.title} />
+            <img
+              src={artwork.image}
+              alt={artwork.title}
+              loading={index === 0 ? 'eager' : 'lazy'}
+              decoding="async"
+            />
           ) : (
             <div className={styles.noImage} />
           )}
