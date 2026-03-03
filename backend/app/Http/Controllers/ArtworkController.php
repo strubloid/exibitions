@@ -15,6 +15,41 @@ class ArtworkController extends Controller
         return response()->json($artworks);
     }
 
+    public function store(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'title'           => 'required|string|max:255',
+            'description'     => 'nullable|string',
+            'sort_order'      => 'integer',
+            'animation_style' => 'string|in:fade,mask-reveal,parallax',
+        ]);
+
+        $artwork = Artwork::create($data);
+
+        return response()->json($artwork, 201);
+    }
+
+    public function update(Request $request, Artwork $artwork): JsonResponse
+    {
+        $data = $request->validate([
+            'title'           => 'sometimes|string|max:255',
+            'description'     => 'nullable|string',
+            'sort_order'      => 'sometimes|integer',
+            'animation_style' => 'sometimes|string|in:fade,mask-reveal,parallax',
+        ]);
+
+        $artwork->update($data);
+
+        return response()->json($artwork->fresh());
+    }
+
+    public function destroy(Artwork $artwork): JsonResponse
+    {
+        $artwork->delete();
+
+        return response()->json(null, 204);
+    }
+
     public function uploadImage(Request $request, Artwork $artwork): JsonResponse
     {
         $request->validate([
