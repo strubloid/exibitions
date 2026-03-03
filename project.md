@@ -118,16 +118,62 @@ A production-ready, containerized, full-stack art exhibition platform for immers
 
 ---
 
-## TODO
-- [ ] Implement folder structure
-- [ ] Add docker-compose.yml
-- [ ] Add Nginx config
-- [ ] Scaffold Laravel backend
-- [ ] Scaffold React frontend
-- [ ] Add migrations
-- [ ] Add GSAP animation logic
-- [ ] Add site-context.json
-- [ ] Write README
+## Phases
+
+### Phase 1 — Hello World on fly.io ✅
+- Static HTML page: "Hello Exibitions"
+- Served via Nginx in Docker
+- Deployed to fly.io
+- Goal: prove the live deployment pipeline works
+
+### Phase 2 — Docker Compose + Project Skeleton
+- Set up `/frontend`, `/backend`, `/nginx` folders
+- `docker-compose.yml` with frontend, backend, db, nginx services
+- `.env` shared config
+- Hot reload working locally
+
+### Phase 3 — React + Vite Frontend Scaffold
+- React 19 + TypeScript + Vite
+- SCSS Modules setup
+- Basic routing / single page shell
+- Redux Toolkit wired up
+
+### Phase 4 — Laravel Backend Scaffold
+- Laravel 11 + PHP 8.3
+- PostgreSQL connection
+- Sanctum auth configured
+- Basic API routes responding
+
+### Phase 5 — Database Schema & Migrations
+- `users`, `artworks`, `site_settings` tables
+- Seeders for initial admin user and sample artworks
+- API endpoints returning real data
+
+### Phase 6 — Gallery UI (Static Content)
+- `Gallery` + `ArtworkSection` components
+- 100vh sections, responsive layout
+- Static artwork data rendered
+
+### Phase 7 — GSAP Animations
+- ScrollTrigger: mask, parallax, scale, fade, 3D
+- GPU-accelerated transforms
+- Mobile/touch optimized
+
+### Phase 8 — Image Handling
+- Image upload endpoint
+- WebP conversion
+- Lazy loading, optimized delivery
+
+### Phase 9 — Admin Panel
+- Login page (Sanctum)
+- CRUD for artworks
+- Image upload UI
+
+### Phase 10 — Production Polish
+- Lighthouse >90
+- Code splitting, final performance pass
+- Full README
+- Production fly.io deploy with all services
 
 ---
 
