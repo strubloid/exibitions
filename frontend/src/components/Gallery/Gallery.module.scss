@@ -1,0 +1,17 @@
+.gallery {
+  width: 100%;
+}
+
+.state {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stateText {
+  font-size: 0.85rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: #f0f0f040;
+}

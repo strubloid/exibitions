@@ -1,11 +1,5 @@
-import styles from './App.module.scss'
+import Gallery from './components/Gallery/Gallery'
 
-function App() {
-  return (
-    <div className={styles.app}>
-      <h1 className={styles.title}>Hello Exibitions</h1>
-    </div>
-  )
+export default function App() {
+  return <Gallery />
 }
-
-export default App

@@ -144,7 +144,7 @@ A production-ready, containerized, full-stack art exhibition platform for immers
 - Sanctum auth configured
 - Basic API routes responding
 
-### Phase 5 — Database Schema & Migrations
+### Phase 5 — Database Schema & Migrations ✅
 - `users`, `artworks`, `site_settings` tables
 - Seeders for initial admin user and sample artworks
 - API endpoints returning real data

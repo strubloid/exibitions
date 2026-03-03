@@ -1,0 +1,52 @@
+import type { Artwork } from '../../store/artworksSlice'
+import styles from './ArtworkSection.module.scss'
+
+interface Props {
+  artwork: Artwork
+  index: number
+}
+
+export default function ArtworkSection({ artwork, index }: Props) {
+  const palette = artwork.metadata?.palette ?? ['#0a0a0a', '#1a1a1a', '#2a2a2a']
+  const bgColor = palette[0] ?? '#0a0a0a'
+  const accentColor = palette[1] ?? '#1a1a1a'
+
+  return (
+    <section
+      className={styles.section}
+      style={{ '--bg': bgColor, '--accent': accentColor } as React.CSSProperties}
+      data-animation={artwork.animation_style}
+      data-index={index}
+    >
+      <div className={styles.inner}>
+        <span className={styles.number}>
+          {String(index + 1).padStart(2, '0')}
+        </span>
+
+        <div className={styles.imagePlaceholder}>
+          {artwork.image ? (
+            <img src={artwork.image} alt={artwork.title} />
+          ) : (
+            <div className={styles.noImage} />
+          )}
+        </div>
+
+        <div className={styles.content}>
+          <h2 className={styles.title}>{artwork.title}</h2>
+          {artwork.description && (
+            <p className={styles.description}>{artwork.description}</p>
+          )}
+          <div className={styles.palette}>
+            {palette.map((color) => (
+              <span
+                key={color}
+                className={styles.swatch}
+                style={{ background: color }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}

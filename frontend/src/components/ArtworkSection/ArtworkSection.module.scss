@@ -1,0 +1,113 @@
+.section {
+  position: relative;
+  height: 100vh;
+  width: 100%;
+  background-color: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, var(--accent) 0%, transparent 70%);
+    opacity: 0.4;
+    pointer-events: none;
+  }
+}
+
+.inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 clamp(1.5rem, 5vw, 5rem);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: 1fr;
+  align-items: center;
+  gap: clamp(1.5rem, 4vw, 4rem);
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    text-align: center;
+  }
+}
+
+.number {
+  font-size: clamp(0.65rem, 1.2vw, 0.85rem);
+  letter-spacing: 0.3em;
+  color: #f0f0f040;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  user-select: none;
+
+  @media (max-width: 768px) {
+    writing-mode: horizontal-tb;
+    order: -1;
+  }
+}
+
+.imagePlaceholder {
+  aspect-ratio: 3 / 4;
+  max-height: 65vh;
+  width: 100%;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.noImage {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--bg) 100%);
+  opacity: 0.6;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 380px;
+
+  @media (max-width: 768px) {
+    max-width: 100%;
+    align-items: center;
+  }
+}
+
+.title {
+  font-size: clamp(1.8rem, 4vw, 3.5rem);
+  font-weight: 300;
+  letter-spacing: 0.05em;
+  line-height: 1.1;
+  color: #f0f0f0;
+}
+
+.description {
+  font-size: clamp(0.85rem, 1.2vw, 1rem);
+  line-height: 1.8;
+  color: #f0f0f099;
+  font-weight: 300;
+}
+
+.palette {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.swatch {
+  display: block;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  border: 1px solid #ffffff18;
+}
