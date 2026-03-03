@@ -21,20 +21,23 @@ services:
       - "5173"
 
   backend:
-    image: php:8.3-cli
+    build: ./backend
     working_dir: /app
     volumes:
       - ./backend:/app
-    command: php -S 0.0.0.0:9000
+      - /app/vendor
+    env_file: .env
+    depends_on:
+      - db
     expose:
-      - "9000"
+      - "8000"
 
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - db-data:/var/lib/postgresql/data
     expose:

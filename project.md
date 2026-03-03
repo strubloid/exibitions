@@ -138,7 +138,7 @@ A production-ready, containerized, full-stack art exhibition platform for immers
 - Basic routing / single page shell
 - Redux Toolkit wired up
 
-### Phase 4 — Laravel Backend Scaffold
+### Phase 4 — Laravel Backend Scaffold 🔄
 - Laravel 11 + PHP 8.3
 - PostgreSQL connection
 - Sanctum auth configured
