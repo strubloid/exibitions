@@ -11,11 +11,14 @@ services:
       - backend
 
   frontend:
-    image: nginx:alpine
+    image: node:20-alpine
+    working_dir: /app
     volumes:
-      - ./frontend:/usr/share/nginx/html:ro
+      - ./frontend:/app
+      - /app/node_modules
+    command: sh -c "npm install && npm run dev"
     expose:
-      - "80"
+      - "5173"
 
   backend:
     image: php:8.3-cli
