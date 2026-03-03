@@ -126,7 +126,7 @@ A production-ready, containerized, full-stack art exhibition platform for immers
 - Deployed to fly.io
 - Goal: prove the live deployment pipeline works
 
-### Phase 2 — Docker Compose + Project Skeleton
+### Phase 2 — Docker Compose + Project Skeleton ✅
 - Set up `/frontend`, `/backend`, `/nginx` folders
 - `docker-compose.yml` with frontend, backend, db, nginx services
 - `.env` shared config
