@@ -89,7 +89,7 @@ interface Positions {
 
 function computePositions(items: Artwork[], VH: number): Positions {
     const TRANS_PX = (TRANSITION_VH / 100) * VH;
-    const SETTLE_PX = (SETTLE_VH / 100) * VH;
+    const SETTLE_PX = (SETTLE_VH / 20) * VH;
     const LINE_PX = (SCROLL_PER_LINE / 100) * VH;
 
     const starts: number[] = [];
@@ -203,7 +203,7 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                                 trigger: containerRef.current,
                                 start: `${poemEnds[i]}px top`,
                                 end: `${starts[i + 1]}px top`,
-                                scrub: 1,
+                                scrub: 0.5,
                             },
                         })
                             .fromTo(layer, { opacity: 1 }, { opacity: 0, ease: "none" })
