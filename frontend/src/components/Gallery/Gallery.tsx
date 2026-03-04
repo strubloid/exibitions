@@ -22,7 +22,7 @@ const CLIP_NONE_H = "inset(0% 50% 0% 50%)";
 
 // Variable-scroll architecture
 const TRANSITION_VH = 80; // vh for enter/exit clip-path animation
-const SETTLE_VH = 5; // vh of stable image before poem starts
+const SETTLE_VH = 0; // vh of stable image before poem starts
 const SCROLL_PER_LINE = 10; // vh per poem line (snap handles one-at-a-time)
 const LINE_H = 70; // px — must match .poemLine height in SCSS
 
@@ -176,8 +176,10 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                 const holdEnd = poemEnds[i];
 
                 if (prefersReduced) {
+                    var zIndexValue = i === 0 ? items.length : i - items.length;
+
                     // ── REDUCED MOTION: simple opacity cross-fades ─────────────────────
-                    gsap.set(layer, { opacity: i === 0 ? 1 : 0, zIndex: i });
+                    gsap.set(layer, { opacity: i === 0 ? 1 : 0, zIndex: zIndexValue });
                     gsap.set(info, { opacity: i === 0 ? 1 : 0, y: 0 });
 
                     if (i > 0) {
@@ -261,7 +263,7 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                                 trigger: containerRef.current,
                                 start: `${holdStart}px top`,
                                 end: `${holdEnd}px top`,
-                                scrub: 3,
+                                scrub: 0.5,
                             },
                         }).fromTo(inner, { yPercent: 1.5 }, { yPercent: -1.5, ease: "none" });
                     }
