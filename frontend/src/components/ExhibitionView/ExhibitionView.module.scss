@@ -1,0 +1,127 @@
+// ─── Intro screen ─────────────────────────────────────────────────────────────
+.intro {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  background: #000;
+}
+
+.cover {
+  position: absolute;
+  inset: 0;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.55;
+    display: block;
+  }
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+}
+
+.back {
+  position: absolute;
+  top: 2.25rem;
+  left: 3rem;
+  z-index: 10;
+  font-size: 0.6rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.3);
+  text-decoration: none;
+  transition: color 0.2s;
+
+  &:hover {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  @media (max-width: 600px) {
+    left: 1.5rem;
+  }
+}
+
+.content {
+  position: absolute;
+  bottom: 10%;
+  left: 4rem;
+  z-index: 10;
+
+  @media (max-width: 600px) {
+    left: 1.5rem;
+    bottom: 8%;
+  }
+}
+
+.name {
+  margin: 0 0 1rem;
+  font-size: clamp(2.5rem, 8vw, 6.5rem);
+  font-weight: 300;
+  letter-spacing: 0.03em;
+  color: #fff;
+  line-height: 1;
+  max-width: 14ch;
+}
+
+.desc {
+  margin: 0 0 2.5rem;
+  font-size: clamp(0.85rem, 1.5vw, 1rem);
+  color: rgba(255, 255, 255, 0.45);
+  max-width: 48ch;
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+.cta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 0.6rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+.ctaLine {
+  width: 32px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+  animation: grow 1.8s ease-in-out infinite;
+}
+
+@keyframes grow {
+  0%, 100% { transform: scaleX(0.4); opacity: 0.3; }
+  50%       { transform: scaleX(1);   opacity: 0.7; }
+}
+
+// ─── Loading ──────────────────────────────────────────────────────────────────
+.loading {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+
+  span {
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.2);
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.2; }
+  50%       { opacity: 0.6; }
+}

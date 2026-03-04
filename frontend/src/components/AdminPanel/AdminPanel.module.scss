@@ -280,3 +280,88 @@
     color: #f66 !important;
   }
 }
+
+// ─── Tabs ─────────────────────────────────────────────────────────────────────
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #1e1e1e;
+  background: #0d0d0d;
+}
+
+.tab,
+.tabActive {
+  padding: 0.75rem 2rem;
+  background: transparent;
+  border: none;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  color: #555;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover { color: #888; }
+}
+
+.tabActive {
+  color: #fff;
+  border-bottom-color: #fff;
+}
+
+// ─── Artwork assignment panel ─────────────────────────────────────────────────
+.assignPanel {
+  background: #080808;
+  border: 1px solid #1a1a1a;
+  border-top: none;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.assignTitle {
+  margin: 0 0 1rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #444;
+}
+
+.assignRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #111;
+
+  &:last-of-type { border-bottom: none; }
+}
+
+.assignCheck {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: 1;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #aaa;
+
+  input[type='checkbox'] {
+    accent-color: #fff;
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+  }
+}
+
+.assignOrder {
+  width: 64px;
+  padding: 0.3rem 0.5rem;
+  background: #0a0a0a;
+  border: 1px solid #222;
+  color: #ccc;
+  font-size: 0.8rem;
+  outline: none;
+  text-align: center;
+
+  &:focus { border-color: #444; }
+}

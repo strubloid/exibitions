@@ -2,10 +2,11 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import type { RootState } from './store'
-import Gallery from './components/Gallery/Gallery'
+import Exhibitions from './components/Exhibitions/Exhibitions'
 
-const Login = lazy(() => import('./components/Login/Login'))
-const AdminPanel = lazy(() => import('./components/AdminPanel/AdminPanel'))
+const Login          = lazy(() => import('./components/Login/Login'))
+const AdminPanel     = lazy(() => import('./components/AdminPanel/AdminPanel'))
+const ExhibitionView = lazy(() => import('./components/ExhibitionView/ExhibitionView'))
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = useSelector((state: RootState) => state.auth.token)
@@ -17,8 +18,9 @@ export default function App() {
     <BrowserRouter>
       <Suspense fallback={null}>
         <Routes>
-          <Route path="/" element={<Gallery />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/"                    element={<Exhibitions />} />
+          <Route path="/exhibition/:slug"    element={<ExhibitionView />} />
+          <Route path="/login"               element={<Login />} />
           <Route
             path="/admin"
             element={

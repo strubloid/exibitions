@@ -3,8 +3,12 @@ import { useDispatch, useSelector } from 'react-redux'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import type { AppDispatch, RootState } from '../../store'
-import { fetchArtworks } from '../../store/artworksSlice'
+import { fetchArtworks, type Artwork } from '../../store/artworksSlice'
 import styles from './Gallery.module.scss'
+
+interface GalleryProps {
+  artworks?: Artwork[]
+}
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -25,9 +29,11 @@ const CLIP_NONE_H = 'inset(0% 50% 0% 50%)'   // iris fully closed — horizontal
 const SCROLL_PER_IMAGE_VH = 250   // 250vh of scroll per artwork
 const TRANSITION_VH       = 100   // 100vh transition overlap window
 
-export default function Gallery() {
+export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
   const dispatch = useDispatch<AppDispatch>()
-  const { items, loading } = useSelector((state: RootState) => state.artworks)
+  const { items: reduxItems, loading: reduxLoading } = useSelector((state: RootState) => state.artworks)
+  const items   = propArtworks ?? reduxItems
+  const loading = propArtworks !== undefined ? false : reduxLoading
 
   const containerRef = useRef<HTMLDivElement>(null)
   const layerRefs    = useRef<HTMLDivElement[]>([])
@@ -35,8 +41,8 @@ export default function Gallery() {
   const infoRefs     = useRef<HTMLDivElement[]>([])
 
   useEffect(() => {
-    dispatch(fetchArtworks())
-  }, [dispatch])
+    if (propArtworks === undefined) dispatch(fetchArtworks())
+  }, [dispatch, propArtworks])
 
   useEffect(() => {
     if (!items.length || !containerRef.current) return
