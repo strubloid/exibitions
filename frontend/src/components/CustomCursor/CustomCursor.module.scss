@@ -2,15 +2,15 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: #fff;
   pointer-events: none;
   z-index: 99999;
   opacity: 0;
-  transform: translate(-50%, -50%);
-  mix-blend-mode: difference;
+  translate: -50% -50%;
+  will-change: transform;
 
   // Only show on fine-pointer devices
   @media not all and (hover: hover) and (pointer: fine) {
