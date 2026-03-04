@@ -22,9 +22,61 @@ const CLIP_NONE_H = "inset(0% 50% 0% 50%)";
 
 // Variable-scroll architecture
 const TRANSITION_VH   = 80   // vh for enter/exit clip-path animation
-const SETTLE_VH       = 60   // vh of stable image before poem starts
+const SETTLE_VH       = 25   // vh of stable image before poem starts
 const SCROLL_PER_LINE = 10   // vh per poem line (snap handles one-at-a-time)
 const LINE_H          = 70   // px — must match .poemLine height in SCSS
+
+// ── Paragraph-aware poem parser ─────────────────────────────────────────────
+// Collapses 1+ consecutive blank lines into a single visual spacer.
+// Only real text lines are scroll steps; spacers are shown but not snapped to.
+interface PoemItem {
+    type: 'line' | 'spacer'
+    text: string        // display text (or '\u00A0' for spacer)
+    scrollIdx: number   // for 'line': 0-based index among real lines; for 'spacer': -1
+}
+interface ParsedPoem {
+    items: PoemItem[]
+    realCount: number               // total real (non-blank) lines
+    trackYForStep: number[]         // track Y offset for each scroll step (real line)
+}
+
+function parsePoemItems(description: string): ParsedPoem {
+    const raw = description.split('\n')
+    const items: PoemItem[] = []
+    let realCount = 0
+    let inBlank = false
+
+    for (const line of raw) {
+        if (line.trim() === '') {
+            // collapse consecutive blanks into one spacer
+            if (!inBlank && items.length > 0) {
+                items.push({ type: 'spacer', text: '\u00A0', scrollIdx: -1 })
+            }
+            inBlank = true
+        } else {
+            items.push({ type: 'line', text: line, scrollIdx: realCount })
+            realCount++
+            inBlank = false
+        }
+    }
+
+    // Remove trailing spacer if any
+    if (items.length > 0 && items[items.length - 1].type === 'spacer') {
+        items.pop()
+    }
+
+    // Build trackY mapping: for scroll step N, what Y offset centers that line
+    const trackYForStep: number[] = []
+    let displayIdx = 0
+    for (const item of items) {
+        if (item.type === 'line') {
+            trackYForStep.push(displayIdx * LINE_H)
+        }
+        displayIdx++
+    }
+
+    return { items, realCount, trackYForStep }
+}
 
 interface Positions {
     starts:     number[]  // scroll-px where artwork i is fully settled
@@ -47,7 +99,8 @@ function computePositions(items: Artwork[], VH: number): Positions {
     let cursor = 0
     for (const artwork of items) {
         starts.push(cursor)
-        const nLines = Math.max(1, (artwork.description ?? '').split('\n').length)
+        const { realCount } = parsePoemItems(artwork.description ?? '')
+        const nLines = Math.max(1, realCount)
         poemStarts.push(cursor + SETTLE_PX)
         poemEnds.push(cursor + SETTLE_PX + nLines * LINE_PX)
         cursor = poemEnds[poemEnds.length - 1] + TRANS_PX
@@ -70,9 +123,9 @@ function lineOpacity(distance: number): number {
 
 function lineScale(distance: number): number {
     const abs = Math.abs(distance);
-    if (abs < 1) return lerp(1.8, 0.9, abs);
-    if (abs < 2) return lerp(0.9, 0.45, abs - 1);
-    return 0.45;
+    if (abs < 1) return lerp(1.25, 0.85, abs);
+    if (abs < 2) return lerp(0.85, 0.5, abs - 1);
+    return 0.5;
 }
 
 export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
@@ -228,11 +281,11 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                 }
 
                 // ── POEM VIEWER ───────────────────────────────────────────────────────
-                const lines   = (artwork.description ?? '').split('\n');
+                const poem    = parsePoemItems(artwork.description ?? '');
                 const track   = poemTrackRefs.current[i];
-                const lineEls = (lineRefs.current[i] ?? []).slice(0, lines.length);
+                const lineEls = (lineRefs.current[i] ?? []).slice(0, poem.items.length);
 
-                if (lines.length > 1 && track && lineEls.length) {
+                if (poem.realCount > 1 && track && lineEls.length) {
                     gsap.set(track, { xPercent: -50, y: 0 });
                     lineEls.forEach((el) => {
                         if (el) gsap.set(el, { opacity: 0, scale: lineScale(0) });
@@ -243,27 +296,40 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                     const qOpacity   = lineEls.map(el => el ? gsap.quickSetter(el, "opacity") as (v: number) => void : null);
                     const qScale     = lineEls.map(el => el ? gsap.quickSetter(el, "scale")   as (v: number) => void : null);
 
-                    const lineCount = Math.max(1, lines.length - 1);
+                    const stepCount = Math.max(1, poem.realCount - 1);
                     ScrollTrigger.create({
                         trigger: containerRef.current,
                         start:   `${poemStarts[i]}px top`,
                         end:     `${poemEnds[i]}px top`,
                         scrub:   0.5,
                         snap: {
-                            snapTo:      1 / lineCount,
+                            snapTo:      1 / stepCount,
                             directional: true,
                             duration:    { min: 0.2, max: 0.4 },
                             delay:       0.05,
                             ease:        'power2.inOut',
                         },
                         onUpdate: (self) => {
-                            const p = self.progress * lineCount;
-                            setY(-p * LINE_H);
+                            const step = self.progress * stepCount;
+                            // Interpolate track Y between real-line positions
+                            const lo = Math.floor(step);
+                            const hi = Math.min(lo + 1, poem.trackYForStep.length - 1);
+                            const frac = step - lo;
+                            const trackY = lerp(poem.trackYForStep[lo] ?? 0, poem.trackYForStep[hi] ?? 0, frac);
+                            setY(-trackY);
+
                             for (let j = 0; j < lineEls.length; j++) {
                                 if (!lineEls[j]) continue;
-                                const blank = lines[j]?.trim() === '';
-                                qOpacity[j]?.(blank ? 0 : lineOpacity(j - p));
-                                qScale[j]?.(blank ? 1 : lineScale(j - p));
+                                const item = poem.items[j];
+                                if (item.type === 'spacer') {
+                                    qOpacity[j]?.(0);
+                                    qScale[j]?.(1);
+                                } else {
+                                    // Distance is between current scroll step and this line's real index
+                                    const dist = item.scrollIdx - step;
+                                    qOpacity[j]?.(lineOpacity(dist));
+                                    qScale[j]?.(lineScale(dist));
+                                }
                             }
                         },
                     });
@@ -374,29 +440,32 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                             <h2 className={styles.title}>{artwork.title}</h2>
                         </div>
 
-                        {artwork.description && (
-                            <div className={styles.poemWindow}>
-                                <div
-                                    ref={(el) => { if (el) poemTrackRefs.current[i] = el; }}
-                                    className={styles.poemTrack}
-                                >
-                                    {artwork.description.split('\n').map((line, j) => (
-                                        <div
-                                            key={j}
-                                            ref={(el) => {
-                                                if (el) {
-                                                    lineRefs.current[i] = lineRefs.current[i] ?? [];
-                                                    lineRefs.current[i][j] = el;
-                                                }
-                                            }}
-                                            className={line.trim() === '' ? styles.poemSpacer : styles.poemLine}
-                                        >
-                                            {line.trim() === '' ? '\u00A0' : line}
-                                        </div>
-                                    ))}
+                        {artwork.description && (() => {
+                            const { items: poemItems } = parsePoemItems(artwork.description);
+                            return (
+                                <div className={styles.poemWindow}>
+                                    <div
+                                        ref={(el) => { if (el) poemTrackRefs.current[i] = el; }}
+                                        className={styles.poemTrack}
+                                    >
+                                        {poemItems.map((item, j) => (
+                                            <div
+                                                key={j}
+                                                ref={(el) => {
+                                                    if (el) {
+                                                        lineRefs.current[i] = lineRefs.current[i] ?? [];
+                                                        lineRefs.current[i][j] = el;
+                                                    }
+                                                }}
+                                                className={item.type === 'spacer' ? styles.poemSpacer : styles.poemLine}
+                                            >
+                                                {item.text}
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            );
+                        })()}
                     </div>
                 ))}
 
