@@ -4,9 +4,22 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: auto; // let GSAP own scroll behaviour
+}
+
 body {
-  background: #0a0a0a;
+  background: #000;
   color: #f0f0f0;
   font-family: 'Georgia', serif;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+// Reduced-motion fallback: replace clip-path transitions with opacity
+@media (prefers-reduced-motion: reduce) {
+  [style*='clip-path'] {
+    clip-path: none !important;
+    opacity: 1 !important;
+  }
 }

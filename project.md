@@ -177,4 +177,68 @@ A production-ready, containerized, full-stack art exhibition platform for immers
 
 ---
 
+### Phase 11 — Cinematic Gallery Engine v2 ✅
+- Full rewrite of Gallery: single sticky viewport, all images stacked as layers
+- Container height = N × 250vh (each artwork owns 250vh of scroll real estate)
+- Each image layer: `position: absolute; inset: 0; will-change: clip-path`
+- GSAP ScrollTrigger scrub per enter/exit pair with `scrub: 1.5` for silky control
+- Z-index choreography: entering image rises above exiting during transition window
+- Parallax hold phase: inner image drifts 2% up/down while fully visible
+
+### Phase 12 — Center-Detach Transition System ✅
+- **Core mechanic**: clip-path collapses image to a center strip, new image expands from same strip
+- **Vertical transitions** (`inset(50% 0% 50% 0%)`): image collapses top+bottom to a horizontal center line, next image opens from that same line outward — like a vertical iris
+- **Horizontal transitions** (`inset(0% 50% 0% 50%)`): image collapses left+right to a vertical center line, next image opens outward — like a horizontal iris
+- **Alternating pattern**: 4 vertical → 4 horizontal → 4 vertical → repeat (driven by `Math.floor(i / 4) % 2`)
+- Inner layer 3D roll: rotateX ±6° (vertical) or rotateY ±6° (horizontal) with `transformPerspective: 1200`
+- Blur pulse: entering image blurs (5px → 0px), exiting image blurs (0px → 3px)
+- Scale breath: entering image 1.07 → 1.0 (zoom in to settled), exiting 1.0 → 0.96 (slight shrink)
+
+### Phase 13 — Info Layer & Typography ✅
+- Artwork title and description overlaid at bottom-left, `position: absolute`
+- Gradient mask: `linear-gradient(to top, rgba(0,0,0,0.85), transparent)`
+- Title: `font-weight: 300`, large, tracked — cinematic caption feel
+- Index number (`01`, `02`…) in muted uppercase above title
+- Fade in: `opacity 0→1, y 24→0` during last 30% of enter transition
+- Fade out: `opacity 1→0, y 0→-16` at start of exit transition
+
+### Phase 14 — Exhibitions Feature
+- New `exhibitions` DB table: id, name, description, slug, cover_image, sort_order, timestamps
+- New `artwork_exhibition` pivot: exhibition_id, artwork_id, sort_order
+- API: `GET /api/exhibitions`, `GET /api/exhibitions/{slug}` (returns artworks within)
+- Admin: create/edit/delete exhibitions, assign & reorder artworks per exhibition
+- Gallery: browse exhibitions list → enter exhibition → scrolls through its artworks
+- Exhibition intro screen: full-bleed cover image, title, description, scroll-to-enter CTA
+
+### Phase 15 — Atmospheric Visual Layer
+- Film grain overlay: animated SVG `<feTurbulence>` filter on a fixed pseudo-element
+- Edge vignette: radial gradient `rgba(0,0,0,0.6)` outward from center
+- Per-artwork dominant color extracted from image (stored in `metadata.palette`)
+- Subtle background color cross-fade between artworks (not on image — on `<body>` or overlay)
+- Cursor: custom dot cursor that reacts to scroll velocity (scale 1→1.6 when fast)
+
+### Phase 16 — Mobile & Touch Experience
+- Touch swipe detection: vertical swipe advances artwork (threshold: 80px)
+- Horizontal swipe: horizontal-transition artworks respond to horizontal swipe
+- Reduced motion: `@media (prefers-reduced-motion: reduce)` — disable clip-path transitions, use opacity fade instead
+- Mobile typography: smaller title, description hidden on phones under 480px
+- iOS momentum scroll: `-webkit-overflow-scrolling: touch` + adjust scrub timing
+
+### Phase 17 — Preloading & Performance
+- Prefetch next artwork image: `<link rel="prefetch">` injected dynamically after current image loads
+- Intersection Observer to mount/unmount distant layers (> ±2 from active)
+- Vite `build.rollupOptions.output.manualChunks` to split GSAP into its own chunk
+- `will-change: clip-path, transform` on transitioning layers, removed after transition ends
+- Lazy hydration: artwork info text deferred until image enters viewport
+
+### Phase 18 — Final Production Deploy
+- All services running on fly.io with Postgres
+- `flyctl secrets set` for all production env vars
+- Custom domain + SSL via fly.io certs
+- Lighthouse audit: Performance ≥ 90, Accessibility ≥ 90, SEO ≥ 90
+- Error boundary wrapping Gallery and AdminPanel
+- `fly.toml` health check endpoint verified
+
+---
+
 # Add images, artworks, and further details as the project evolves.
