@@ -6,6 +6,11 @@ import { logout } from '../../store/authSlice'
 import type { Exhibition } from '../../store/exhibitionsSlice'
 import styles from './AdminPanel.module.scss'
 
+const shortDesc = (text: string) => {
+  const line = text.split('\n').find(l => l.trim()) ?? ''
+  return line.length > 72 ? line.slice(0, 72) + '…' : line
+}
+
 interface Artwork {
   id: number
   title: string
@@ -210,7 +215,7 @@ export default function AdminPanel() {
                 <div className={styles.info}>
                   <strong>{artwork.title}</strong>
                   <span>#{artwork.sort_order} · {artwork.animation_style}</span>
-                  {artwork.description && <p>{artwork.description}</p>}
+                  {artwork.description && <p>{shortDesc(artwork.description)}</p>}
                 </div>
                 <div className={styles.itemActions}>
                   <label className={styles.uploadBtn}>
@@ -262,7 +267,7 @@ export default function AdminPanel() {
                   <div className={styles.info}>
                     <strong>{ex.name}</strong>
                     <span>/{ex.slug}</span>
-                    {ex.description && <p>{ex.description}</p>}
+                    {ex.description && <p>{shortDesc(ex.description)}</p>}
                   </div>
                   <div className={styles.itemActions}>
                     <label className={styles.uploadBtn}>

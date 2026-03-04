@@ -10,6 +10,11 @@ import styles from './Exhibitions.module.scss'
 
 gsap.registerPlugin(ScrollTrigger)
 
+const shortDesc = (text: string) => {
+  const line = text.split('\n').find(l => l.trim()) ?? ''
+  return line.length > 72 ? line.slice(0, 72) + '…' : line
+}
+
 export default function Exhibitions() {
   const dispatch = useDispatch<AppDispatch>()
   const { items, loading } = useSelector((state: RootState) => state.exhibitions)
@@ -129,7 +134,7 @@ export default function Exhibitions() {
                 <div className={styles.overlayLeft}>
                   <h2 data-anim="" className={styles.name}>{exhibition.name}</h2>
                   {exhibition.description && (
-                    <p data-anim="" className={styles.description}>{exhibition.description}</p>
+                    <p data-anim="" className={styles.description}>{shortDesc(exhibition.description)}</p>
                   )}
                 </div>
                 <span data-anim="" className={styles.cta}>Enter</span>

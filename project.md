@@ -232,7 +232,7 @@ A production-ready, containerized, full-stack art exhibition platform for immers
 - Cover image fills the entire viewport (`object-fit: cover`), title large at bottom-left, CTA at bottom-right
 - Hover: image scales slightly, CTA brightens
 
-### Phase 18 — Scroll-Driven Poem / Description Viewer
+### Phase 18 — Scroll-Driven Poem / Description Viewer ✅
 - The artwork description is treated as a poem or lyric — split into individual lines by newline (`\n`)
 - Lines are grouped into stanzas of 4 lines each; blank lines between groups create visible stanza spacing
 - As the user scrolls through the artwork's 250vh, the "current line" advances through the poem
