@@ -139,7 +139,6 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
     const innerRefs = useRef<HTMLDivElement[]>([]);
     const infoRefs = useRef<HTMLDivElement[]>([]);
     const colorFogRef = useRef<HTMLDivElement>(null);
-    const poemWindowRefs = useRef<HTMLDivElement[]>([]);
     const poemTrackRefs = useRef<HTMLDivElement[]>([]);
     const lineRefs = useRef<HTMLDivElement[][]>([]);
     const artworkStartsRef = useRef<number[]>([]);
@@ -283,22 +282,10 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
 
                 // ── POEM VIEWER ───────────────────────────────────────────────────────
                 const poem = parsePoemItems(artwork.description ?? "");
-                const poemWin = poemWindowRefs.current[i];
                 const track = poemTrackRefs.current[i];
                 const lineEls = (lineRefs.current[i] ?? []).slice(0, poem.items.length);
 
-                if (poem.realCount > 1 && track && lineEls.length && poemWin) {
-                    // Hide all poem windows; show only during this artwork's scroll range
-                    gsap.set(poemWin, { visibility: i === 0 ? "visible" : "hidden" });
-                    ScrollTrigger.create({
-                        trigger: containerRef.current,
-                        start: `${starts[i]}px top`,
-                        end: `${poemEnds[i] + TRANS_PX}px top`,
-                        onEnter: () => gsap.set(poemWin, { visibility: "visible" }),
-                        onLeave: () => gsap.set(poemWin, { visibility: "hidden" }),
-                        onEnterBack: () => gsap.set(poemWin, { visibility: "visible" }),
-                        onLeaveBack: () => gsap.set(poemWin, { visibility: "hidden" }),
-                    });
+                if (poem.realCount > 1 && track && lineEls.length) {
                     gsap.set(track, { xPercent: -50, y: 0 });
                     lineEls.forEach((el) => {
                         if (el) gsap.set(el, { opacity: 0, scale: lineScale(0) });
@@ -459,48 +446,38 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                             </span>
                             <h2 className={styles.title}>{artwork.title}</h2>
                         </div>
+
+                        {artwork.description &&
+                            (() => {
+                                const { items: poemItems } = parsePoemItems(artwork.description);
+                                return (
+                                    <div className={styles.poemWindow}>
+                                        <div
+                                            ref={(el) => {
+                                                if (el) poemTrackRefs.current[i] = el;
+                                            }}
+                                            className={styles.poemTrack}
+                                        >
+                                            {poemItems.map((item, j) => (
+                                                <div
+                                                    key={j}
+                                                    ref={(el) => {
+                                                        if (el) {
+                                                            lineRefs.current[i] = lineRefs.current[i] ?? [];
+                                                            lineRefs.current[i][j] = el;
+                                                        }
+                                                    }}
+                                                    className={item.type === "spacer" ? styles.poemSpacer : styles.poemLine}
+                                                >
+                                                    {item.text}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            })()}
                     </div>
                 ))}
-
-                {/* Poem windows outside layers so pointer-events / text selection work */}
-                {items.map(
-                    (artwork, i) =>
-                        artwork.description &&
-                        (() => {
-                            const { items: poemItems } = parsePoemItems(artwork.description);
-                            return (
-                                <div
-                                    key={`poem-${artwork.id}`}
-                                    ref={(el) => {
-                                        if (el) poemWindowRefs.current[i] = el;
-                                    }}
-                                    className={styles.poemWindow}
-                                >
-                                    <div
-                                        ref={(el) => {
-                                            if (el) poemTrackRefs.current[i] = el;
-                                        }}
-                                        className={styles.poemTrack}
-                                    >
-                                        {poemItems.map((item, j) => (
-                                            <div
-                                                key={j}
-                                                ref={(el) => {
-                                                    if (el) {
-                                                        lineRefs.current[i] = lineRefs.current[i] ?? [];
-                                                        lineRefs.current[i][j] = el;
-                                                    }
-                                                }}
-                                                className={item.type === "spacer" ? styles.poemSpacer : styles.poemLine}
-                                            >
-                                                {item.text}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            );
-                        })(),
-                )}
 
                 <div className={styles.scrollHint} aria-hidden="true">
                     <span>{isTouch ? "swipe" : "scroll"}</span>
