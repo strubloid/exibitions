@@ -27,9 +27,9 @@ body::before {
   will-change: transform;
 }
 
-// ─── Custom cursor — hide native on fine-pointer devices ──────────────────────
-@media (hover: hover) and (pointer: fine) {
-  *, *::before, *::after { cursor: none !important; }
+// Custom PNG cursor for the whole app
+body {
+  cursor: url("/cursor.png") 5 5, auto;
 }
 
 // Reduced-motion fallback: replace clip-path transitions with opacity

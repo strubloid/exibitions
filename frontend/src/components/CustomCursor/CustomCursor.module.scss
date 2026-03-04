@@ -1,19 +1,5 @@
-.cursor {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #fff;
-  pointer-events: none;
-  z-index: 99999;
-  opacity: 0;
-  translate: -50% -50%;
-  will-change: transform;
 
-  // Only show on fine-pointer devices
-  @media not all and (hover: hover) and (pointer: fine) {
-    display: none;
-  }
+/* Use custom PNG cursor for the whole app */
+body {
+  cursor: url("../assets/cursor.png") 5 5, auto;
 }
