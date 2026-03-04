@@ -186,6 +186,19 @@
   100% { transform: scaleY(0); transform-origin: bottom; opacity: 0.3; }
 }
 
+// ─── Reduced motion — disable decorative animations ───────────────────────────
+@media (prefers-reduced-motion: reduce) {
+  .sticky::after {
+    animation: none;
+  }
+
+  .scrollLine {
+    animation: none;
+    opacity: 0.4;
+    transform: scaleY(1);
+  }
+}
+
 // ─── Loading state ────────────────────────────────────────────────────────────
 .loading {
   position: fixed;

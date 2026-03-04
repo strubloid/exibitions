@@ -202,7 +202,7 @@ A production-ready, containerized, full-stack art exhibition platform for immers
 - Fade in: `opacity 0→1, y 24→0` during last 30% of enter transition
 - Fade out: `opacity 1→0, y 0→-16` at start of exit transition
 
-### Phase 14 — Exhibitions Feature
+### Phase 14 — Exhibitions Feature ✅
 - New `exhibitions` DB table: id, name, description, slug, cover_image, sort_order, timestamps
 - New `artwork_exhibition` pivot: exhibition_id, artwork_id, sort_order
 - API: `GET /api/exhibitions`, `GET /api/exhibitions/{slug}` (returns artworks within)
@@ -210,19 +210,19 @@ A production-ready, containerized, full-stack art exhibition platform for immers
 - Gallery: browse exhibitions list → enter exhibition → scrolls through its artworks
 - Exhibition intro screen: full-bleed cover image, title, description, scroll-to-enter CTA
 
-### Phase 15 — Atmospheric Visual Layer
+### Phase 15 — Atmospheric Visual Layer ✅
 - Film grain overlay: animated SVG `<feTurbulence>` filter on a fixed pseudo-element
 - Edge vignette: radial gradient `rgba(0,0,0,0.6)` outward from center
 - Per-artwork dominant color extracted from image (stored in `metadata.palette`)
 - Subtle background color cross-fade between artworks (not on image — on `<body>` or overlay)
 - Cursor: custom dot cursor that reacts to scroll velocity (scale 1→1.6 when fast)
 
-### Phase 16 — Mobile & Touch Experience
+### Phase 16 — Mobile & Touch Experience ✅
 - Touch swipe detection: vertical swipe advances artwork (threshold: 80px)
 - Horizontal swipe: horizontal-transition artworks respond to horizontal swipe
 - Reduced motion: `@media (prefers-reduced-motion: reduce)` — disable clip-path transitions, use opacity fade instead
 - Mobile typography: smaller title, description hidden on phones under 480px
-- iOS momentum scroll: `-webkit-overflow-scrolling: touch` + adjust scrub timing
+- iOS momentum scroll: `ScrollTrigger.normalizeScroll(true)` on touch devices
 
 ### Phase 17 — Preloading & Performance
 - Prefetch next artwork image: `<link rel="prefetch">` injected dynamically after current image loads
