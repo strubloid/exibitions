@@ -186,7 +186,7 @@
 .poemWindow {
   position: absolute;
   inset: 0 20px;
-  z-index: 50;
+  z-index: 60;
   pointer-events: none;
   overflow: hidden;
 
@@ -241,6 +241,9 @@
   opacity: 0.08;               // GSAP drives this at runtime
   white-space: nowrap;
   overflow: visible;
+  user-select: text;
+  pointer-events: auto;
+  cursor: text;
 }
 
 // Blank line between stanzas — same height so scroll math stays uniform
