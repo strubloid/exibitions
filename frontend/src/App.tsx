@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import type { RootState } from './store'
 import Exhibitions from './components/Exhibitions/Exhibitions'
+import CustomCursor from './components/CustomCursor/CustomCursor'
 
 const Login          = lazy(() => import('./components/Login/Login'))
 const AdminPanel     = lazy(() => import('./components/AdminPanel/AdminPanel'))
@@ -16,6 +17,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <BrowserRouter>
+      <CustomCursor />
       <Suspense fallback={null}>
         <Routes>
           <Route path="/"                    element={<Exhibitions />} />

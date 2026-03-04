@@ -5,14 +5,6 @@ use App\Http\Controllers\ArtworkController;
 use App\Http\Controllers\ExhibitionController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return response()->json(['status' => 'ok', 'app' => 'Exibitions API']);
-});
-
-Route::get('/health', function () {
-    return response()->json(['status' => 'ok']);
-});
-
 // Public
 Route::get('/artworks', [ArtworkController::class, 'index']);
 Route::get('/exhibitions', [ExhibitionController::class, 'index']);

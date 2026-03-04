@@ -16,6 +16,21 @@ body {
   overflow-x: hidden;
 }
 
+// ─── Edge vignette (fixed, always on) ─────────────────────────────────────────
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.65) 100%);
+}
+
+// ─── Custom cursor — hide native on fine-pointer devices ──────────────────────
+@media (hover: hover) and (pointer: fine) {
+  *, *::before, *::after { cursor: none !important; }
+}
+
 // Reduced-motion fallback: replace clip-path transitions with opacity
 @media (prefers-reduced-motion: reduce) {
   [style*='clip-path'] {

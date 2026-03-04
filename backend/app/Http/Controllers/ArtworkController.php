@@ -73,14 +73,43 @@ class ArtworkController extends Controller
             default                     => imagecreatefromjpeg($file->getRealPath()),
         };
 
+        // Extract dominant palette before destroying the source
+        $palette = $this->extractPalette($source);
+
         // Convert and save as WebP at quality 85
         imagewebp($source, $dir . '/' . $filename, 85);
         imagedestroy($source);
 
         $artwork->update([
-            'image' => '/storage/artworks/' . $filename,
+            'image'    => '/storage/artworks/' . $filename,
+            'metadata' => array_merge($artwork->metadata ?? [], ['palette' => $palette]),
         ]);
 
         return response()->json($artwork->fresh());
+    }
+
+    private function extractPalette(\GdImage $img): array
+    {
+        $w = imagesx($img);
+        $h = imagesy($img);
+
+        // Sample 3 zones: full image average, center crop, bottom third
+        $zones = [
+            [0,                   0,                   $w,              $h             ],
+            [(int)($w * 0.25),    (int)($h * 0.25),    (int)($w * 0.5), (int)($h * 0.5)],
+            [0,                   (int)($h * 0.65),    $w,              (int)($h * 0.35)],
+        ];
+
+        $colors = [];
+        foreach ($zones as [$x, $y, $zw, $zh]) {
+            if ($zw < 1 || $zh < 1) continue;
+            $thumb = imagecreatetruecolor(1, 1);
+            imagecopyresampled($thumb, $img, 0, 0, $x, $y, 1, 1, $zw, $zh);
+            $rgb      = imagecolorat($thumb, 0, 0);
+            $colors[] = sprintf('#%02x%02x%02x', ($rgb >> 16) & 0xFF, ($rgb >> 8) & 0xFF, $rgb & 0xFF);
+            imagedestroy($thumb);
+        }
+
+        return $colors;
     }
 }

@@ -39,6 +39,7 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
   const layerRefs    = useRef<HTMLDivElement[]>([])
   const innerRefs    = useRef<HTMLDivElement[]>([])
   const infoRefs     = useRef<HTMLDivElement[]>([])
+  const colorFogRef  = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (propArtworks === undefined) dispatch(fetchArtworks())
@@ -178,6 +179,20 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
               { yPercent: -1.5, ease: 'none' }
             )
         }
+
+        // ── COLOR FOG ───────────────────────────────────────────────────────
+        // Cross-fade the palette color of the current artwork into the fog overlay
+        const fogColor = items[i].metadata?.palette?.[0]
+        if (fogColor && colorFogRef.current) {
+          if (i === 0) gsap.set(colorFogRef.current, { backgroundColor: fogColor })
+          ScrollTrigger.create({
+            trigger: containerRef.current,
+            start:   `${i * SCROLL}px top`,
+            end:     `${(i + 1) * SCROLL}px top`,
+            onEnter:     () => gsap.to(colorFogRef.current, { backgroundColor: fogColor, duration: 1.4, ease: 'power2.out' }),
+            onEnterBack: () => gsap.to(colorFogRef.current, { backgroundColor: fogColor, duration: 1.4, ease: 'power2.out' }),
+          })
+        }
       })
     }, containerRef)
 
@@ -201,6 +216,7 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
       style={{ height: `${totalVh}vh` }}
     >
       <div className={styles.sticky}>
+        <div ref={colorFogRef} className={styles.colorFog} />
         {items.map((artwork, i) => (
           <div
             key={artwork.id}
