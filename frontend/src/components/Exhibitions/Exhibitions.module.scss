@@ -1,118 +1,155 @@
+// ─── Container ────────────────────────────────────────────────────────────────
 .container {
-  min-height: 100vh;
   background: #000;
-  padding: 5rem 3rem 4rem;
-
-  @media (max-width: 600px) {
-    padding: 4rem 1.25rem 3rem;
-  }
 }
 
-.header {
-  margin-bottom: 3rem;
-}
-
-.title {
-  margin: 0;
-  font-size: clamp(1rem, 2vw, 1.25rem);
-  font-weight: 300;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.25);
-}
-
-// ─── Grid ─────────────────────────────────────────────────────────────────────
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 2px;
-
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-// ─── Card ─────────────────────────────────────────────────────────────────────
-.card {
+// ─── Full-viewport section ────────────────────────────────────────────────────
+.section {
   position: relative;
-  aspect-ratio: 3 / 4;
+  height: 100vh;
   overflow: hidden;
-  background: #0d0d0d;
-  text-decoration: none;
-  display: block;
 
-  &:hover .cardInner {
-    transform: scale(1.05);
+  // Subtle divider between sections
+  & + & {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+}
+
+// ─── Anchor covers the entire section ────────────────────────────────────────
+.link {
+  position: absolute;
+  inset: 0;
+  display: block;
+  text-decoration: none;
+  color: inherit;
+
+  &:hover .imageWrap {
+    transform: scale(1.025);
   }
 
-  &:hover .cardCta {
-    color: rgba(255, 255, 255, 0.6);
+  &:hover .cta {
+    color: rgba(255, 255, 255, 0.8);
     letter-spacing: 0.35em;
   }
 }
 
-.cardInner {
+// ─── Image wrapper — extra vertical space for parallax travel ─────────────────
+.imageWrap {
   position: absolute;
-  inset: 0;
-  transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
+  inset: -15% 0;
+  will-change: transform;
+  transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.cardPlaceholder {
+.image {
   width: 100%;
   height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  user-select: none;
+  pointer-events: none;
+}
+
+// ─── Placeholder when no cover image ─────────────────────────────────────────
+.placeholder {
+  width: 100%;
+  height: 100%;
+  background: #0d0d0d;
   display: flex;
   align-items: center;
   justify-content: center;
 
   span {
-    font-size: 25vw;
+    font-size: 35vw;
     font-weight: 700;
     color: rgba(255, 255, 255, 0.03);
     user-select: none;
   }
 }
 
-.cardOverlay {
+// ─── Overlay: gradient + text ─────────────────────────────────────────────────
+.overlay {
   position: absolute;
-  inset: auto 0 0 0;
-  padding: 5rem 1.75rem 1.75rem;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.4) 60%, transparent 100%);
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 3rem 4rem;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.88) 0%,
+    rgba(0, 0, 0, 0.15) 55%,
+    transparent 100%
+  );
+  pointer-events: none;
+
+  @media (max-width: 600px) {
+    padding: 2rem 1.75rem;
+  }
 }
 
-.cardName {
-  display: block;
-  font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+// ─── Index counter (top-right) ────────────────────────────────────────────────
+.index {
+  align-self: flex-end;
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.28);
+  font-weight: 400;
+}
+
+// ─── Bottom row: name/desc left, CTA right ───────────────────────────────────
+.overlayBottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.overlayLeft {
+  flex: 1;
+  min-width: 0;
+}
+
+.name {
+  margin: 0 0 0.8rem;
+  font-size: clamp(2.2rem, 6vw, 5.5rem);
   font-weight: 300;
+  letter-spacing: 0.02em;
   color: #fff;
-  letter-spacing: 0.03em;
-  margin-bottom: 0.5rem;
+  line-height: 1.0;
+  max-width: 16ch;
 }
 
-.cardDesc {
-  margin: 0 0 1rem;
-  font-size: 0.82rem;
+.description {
+  margin: 0;
+  font-size: clamp(0.8rem, 1.2vw, 1rem);
   color: rgba(255, 255, 255, 0.4);
-  line-height: 1.55;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  max-width: 44ch;
+  line-height: 1.65;
+  font-weight: 300;
+
+  @media (max-width: 480px) {
+    display: none;
+  }
 }
 
-.cardCta {
-  display: block;
-  font-size: 0.6rem;
+// ─── CTA (bottom-right) ───────────────────────────────────────────────────────
+.cta {
+  flex-shrink: 0;
+  align-self: flex-end;
+  font-size: 0.65rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.25);
-  transition: color 0.3s, letter-spacing 0.3s;
+  color: rgba(255, 255, 255, 0.3);
+  transition: color 0.4s, letter-spacing 0.4s;
+  white-space: nowrap;
+  padding-bottom: 0.1em;
+
+  @media (max-width: 480px) {
+    display: none;
+  }
 }
 
 // ─── Loading ──────────────────────────────────────────────────────────────────

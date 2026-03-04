@@ -224,14 +224,47 @@ A production-ready, containerized, full-stack art exhibition platform for immers
 - Mobile typography: smaller title, description hidden on phones under 480px
 - iOS momentum scroll: `ScrollTrigger.normalizeScroll(true)` on touch devices
 
-### Phase 17 — Preloading & Performance
+### Phase 17 — Full-Viewport Exhibitions Homepage ✅
+- Each exhibition on the homepage fills the full screen (100vh) with its cover image
+- Native vertical scroll moves from one full-screen exhibition to the next
+- GSAP parallax: cover image drifts subtly as you scroll past each section
+- Staggered text entrance: index counter, title, description, and "Enter" CTA animate in as each section enters the viewport
+- Cover image fills the entire viewport (`object-fit: cover`), title large at bottom-left, CTA at bottom-right
+- Hover: image scales slightly, CTA brightens
+
+### Phase 18 — Scroll-Driven Poem / Description Viewer
+- The artwork description is treated as a poem or lyric — split into individual lines by newline (`\n`)
+- Lines are grouped into stanzas of 4 lines each; blank lines between groups create visible stanza spacing
+- As the user scrolls through the artwork's 250vh, the "current line" advances through the poem
+- At any scroll position, up to 7 lines are visible simultaneously, centered vertically on screen:
+  - Line -3 (above): ~8% opacity — exists but unreadable, peripheral awareness
+  - Line -2: ~10% opacity
+  - Line -1: ~15% opacity — previous line, fading into memory
+  - **Current line (center)**: ~100% opacity, bright white — the line being read now
+  - Line +1 (below): ~15% opacity — coming soon, readable but soft
+  - Line +2: ~10% opacity
+  - Line +3: ~8% opacity — barely a hint of what's next
+- As scroll advances: current line fades up into the "past" opacity chain, next line rises to full white
+- The poem display lives in the center of the sticky viewport, overlaid on the artwork image
+- The title/index info remains at bottom-left; the poem occupies the vertical center of the screen
+- Admin: no changes needed — the existing `description` field on each artwork stores the poem text, with stanza breaks written as blank lines between groups of 4 lines
+
+### Phase 19 — Exhibition Detail: Background & Press Clippings
+- On the individual exhibition page, below the 100vh cover intro, add two new scroll sections:
+  - **Background**: a text section describing where and when the exhibition was presented (venue, city, dates, context). Stored as a `background` text field on the exhibition.
+  - **Clippings**: a press coverage section listing links from internet, journals, and magazines where the exhibition was featured. Stored as a JSON array of `{ title, url, source, thumbnail, screenshot_image }` on the exhibition, that usualy people save the screenshot of it, as websites can be down, a screenshot cant.
+- Database: new migration adding `background` (text, nullable) and `clippings` (JSON, nullable) columns to the `exhibitions` table
+- Admin panel: textarea for background text + a list manager to add/remove clipping entries (title, URL, source name, optional thumbnail URL)
+- Frontend (ExhibitionView): after the 100vh cover, render Background section then Clippings section, then the artwork Gallery below
+
+### Phase 20 — Preloading & Performance
 - Prefetch next artwork image: `<link rel="prefetch">` injected dynamically after current image loads
 - Intersection Observer to mount/unmount distant layers (> ±2 from active)
 - Vite `build.rollupOptions.output.manualChunks` to split GSAP into its own chunk
 - `will-change: clip-path, transform` on transitioning layers, removed after transition ends
 - Lazy hydration: artwork info text deferred until image enters viewport
 
-### Phase 18 — Final Production Deploy
+### Phase 21 — Final Production Deploy
 - All services running on fly.io with Postgres
 - `flyctl secrets set` for all production env vars
 - Custom domain + SSL via fly.io certs

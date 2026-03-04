@@ -1,18 +1,74 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import type { AppDispatch, RootState } from '../../store'
 import { fetchExhibitions } from '../../store/exhibitionsSlice'
 import Gallery from '../Gallery/Gallery'
 import styles from './Exhibitions.module.scss'
 
+gsap.registerPlugin(ScrollTrigger)
+
 export default function Exhibitions() {
   const dispatch = useDispatch<AppDispatch>()
   const { items, loading } = useSelector((state: RootState) => state.exhibitions)
 
+  const sectionRefs = useRef<HTMLElement[]>([])
+  const imageRefs   = useRef<HTMLDivElement[]>([])
+  const overlayRefs = useRef<HTMLDivElement[]>([])
+
   useEffect(() => {
     dispatch(fetchExhibitions())
   }, [dispatch])
+
+  useEffect(() => {
+    if (!items.length) return
+
+    const ctx = gsap.context(() => {
+      items.forEach((_, i) => {
+        const section = sectionRefs.current[i]
+        const image   = imageRefs.current[i]
+        const overlay = overlayRefs.current[i]
+        if (!section || !image || !overlay) return
+
+        // Parallax: image drifts as section scrolls through the viewport
+        gsap.fromTo(image,
+          { yPercent: -8 },
+          {
+            yPercent: 8,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: section,
+              start:   'top bottom',
+              end:     'bottom top',
+              scrub:   true,
+            },
+          }
+        )
+
+        // Entrance: staggered text reveal when section enters viewport
+        const animEls = overlay.querySelectorAll('[data-anim]')
+        gsap.fromTo(animEls,
+          { opacity: 0, y: 22 },
+          {
+            opacity:  1,
+            y:        0,
+            duration: 1,
+            stagger:  0.1,
+            ease:     'power3.out',
+            scrollTrigger: {
+              trigger: section,
+              start:   'top 85%',
+              once:    true,
+            },
+          }
+        )
+      })
+    })
+
+    return () => ctx.revert()
+  }, [items])
 
   // No exhibitions yet — show the global artworks gallery
   if (!loading && items.length === 0) {
@@ -29,36 +85,59 @@ export default function Exhibitions() {
 
   return (
     <div className={styles.container}>
-      <header className={styles.header}>
-        <h1 className={styles.title}>Exhibitions</h1>
-      </header>
-
-      <div className={styles.grid}>
-        {items.map((exhibition) => (
+      {items.map((exhibition, i) => (
+        <section
+          key={exhibition.id}
+          ref={el => { if (el) sectionRefs.current[i] = el }}
+          className={styles.section}
+        >
           <Link
-            key={exhibition.id}
             to={`/exhibition/${exhibition.slug}`}
-            className={styles.card}
+            className={styles.link}
+            aria-label={exhibition.name}
           >
-            <div className={styles.cardInner}>
+            {/* Cover image with parallax */}
+            <div
+              ref={el => { if (el) imageRefs.current[i] = el }}
+              className={styles.imageWrap}
+            >
               {exhibition.cover_image ? (
-                <img src={exhibition.cover_image} alt={exhibition.name} loading="lazy" />
+                <img
+                  src={exhibition.cover_image}
+                  alt={exhibition.name}
+                  className={styles.image}
+                  loading={i === 0 ? 'eager' : 'lazy'}
+                  draggable={false}
+                />
               ) : (
-                <div className={styles.cardPlaceholder}>
+                <div className={styles.placeholder}>
                   <span>{exhibition.name[0]}</span>
                 </div>
               )}
             </div>
-            <div className={styles.cardOverlay}>
-              <strong className={styles.cardName}>{exhibition.name}</strong>
-              {exhibition.description && (
-                <p className={styles.cardDesc}>{exhibition.description}</p>
-              )}
-              <span className={styles.cardCta}>Enter</span>
+
+            {/* Text overlay */}
+            <div
+              ref={el => { if (el) overlayRefs.current[i] = el }}
+              className={styles.overlay}
+            >
+              <span data-anim="" className={styles.index}>
+                {String(i + 1).padStart(2, '0')} / {String(items.length).padStart(2, '0')}
+              </span>
+
+              <div className={styles.overlayBottom}>
+                <div className={styles.overlayLeft}>
+                  <h2 data-anim="" className={styles.name}>{exhibition.name}</h2>
+                  {exhibition.description && (
+                    <p data-anim="" className={styles.description}>{exhibition.description}</p>
+                  )}
+                </div>
+                <span data-anim="" className={styles.cta}>Enter</span>
+              </div>
             </div>
           </Link>
-        ))}
-      </div>
+        </section>
+      ))}
     </div>
   )
 }
