@@ -160,11 +160,9 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                     const noneIn = tType === "vertical" ? CLIP_NONE_V : CLIP_NONE_H;
                     const noneOut= tType === "vertical" ? CLIP_NONE_V : CLIP_NONE_H;
 
-                    gsap.set(inner, { transformPerspective: 1200 });
-
                     if (i === 0) {
                         gsap.set(layer, { clipPath: CLIP_FULL, zIndex: 10 });
-                        gsap.set(inner, { scale: 1, rotateX: 0, rotateY: 0 });
+                        gsap.set(inner, { scale: 1 });
                         gsap.set(info,  { opacity: 1, y: 0 });
                     } else {
                         gsap.set(layer, { clipPath: noneIn, zIndex: i });
@@ -178,19 +176,14 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                                 trigger: containerRef.current,
                                 start:   `${starts[i] - TRANS_PX}px top`,
                                 end:     `${starts[i]}px top`,
-                                scrub:   1.5,
+                                scrub:   1,
                                 onEnter:     () => gsap.set(layer, { zIndex: 20 }),
                                 onLeaveBack: () => gsap.set(layer, { zIndex: i }),
                             },
                         })
                             .fromTo(layer, { clipPath: noneIn }, { clipPath: CLIP_FULL, ease: "none" })
-                            .fromTo(
-                                inner,
-                                { scale: 1.07, rotateX: tType === "vertical" ? -6 : 0, rotateY: tType === "horizontal" ? -6 : 0 },
-                                { scale: 1,    rotateX: 0, rotateY: 0, ease: "none" },
-                                "<",
-                            )
-                            .fromTo(info, { opacity: 0, y: 24 }, { opacity: 1, y: 0, ease: "none" }, ">-0.3");
+                            .fromTo(inner, { scale: 1.05 }, { scale: 1, ease: "none" }, "<")
+                            .fromTo(info,  { opacity: 0, y: 24 }, { opacity: 1, y: 0, ease: "none" }, ">-0.3");
                     }
 
                     // ── EXIT ───────────────────────────────────────────────────────────
@@ -200,17 +193,12 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                                 trigger: containerRef.current,
                                 start:   `${poemEnds[i]}px top`,
                                 end:     `${starts[i + 1]}px top`,
-                                scrub:   1.5,
+                                scrub:   1,
                             },
                         })
                             .fromTo(layer, { clipPath: CLIP_FULL }, { clipPath: noneOut, ease: "none" })
-                            .fromTo(
-                                inner,
-                                { scale: 1 },
-                                { scale: 0.96, rotateX: tType === "vertical" ? 5 : 0, rotateY: tType === "horizontal" ? 5 : 0, ease: "none" },
-                                "<",
-                            )
-                            .fromTo(info, { opacity: 1, y: 0 }, { opacity: 0, y: -16, ease: "none" }, "<");
+                            .fromTo(inner, { scale: 1 }, { scale: 0.97, ease: "none" }, "<")
+                            .fromTo(info,  { opacity: 1, y: 0 }, { opacity: 0, y: -16, ease: "none" }, "<");
                     }
 
                     // ── PARALLAX during hold + poem ────────────────────────────────────
