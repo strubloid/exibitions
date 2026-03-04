@@ -131,7 +131,7 @@ function lineScale(distance: number): number {
 export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
     const dispatch = useDispatch<AppDispatch>();
     const { items: reduxItems, loading: reduxLoading } = useSelector((state: RootState) => state.artworks);
-    const items = propArtworks ?? reduxItems;
+    const items = [...(propArtworks ?? reduxItems)].sort((a, b) => a.sort_order - b.sort_order);
     const loading = propArtworks !== undefined ? false : reduxLoading;
 
     const containerRef = useRef<HTMLDivElement>(null);
@@ -285,7 +285,7 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                 const track = poemTrackRefs.current[i];
                 const lineEls = (lineRefs.current[i] ?? []).slice(0, poem.items.length);
 
-                if (poem.realCount > 1 && track && lineEls.length) {
+                if (poem.realCount >= 1 && track && lineEls.length) {
                     gsap.set(track, { xPercent: -50, y: 0 });
                     lineEls.forEach((el) => {
                         if (el) gsap.set(el, { opacity: 0, scale: lineScale(0) });
