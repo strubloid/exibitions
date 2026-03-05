@@ -1,10 +1,11 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import type { AppDispatch, RootState } from '../../store'
 import { fetchExhibitions } from '../../store/exhibitionsSlice'
+import { extractDominantColor } from '../../utils/extractDominantColor'
 import Gallery from '../Gallery/Gallery'
 import styles from './Exhibitions.module.scss'
 
@@ -22,10 +23,21 @@ export default function Exhibitions() {
   const sectionRefs = useRef<HTMLElement[]>([])
   const imageRefs   = useRef<HTMLDivElement[]>([])
   const overlayRefs = useRef<HTMLDivElement[]>([])
+  const [dominantColors, setDominantColors] = useState<Record<number, string>>({})
 
   useEffect(() => {
     dispatch(fetchExhibitions())
   }, [dispatch])
+
+  useEffect(() => {
+    items.forEach((exhibition) => {
+      if (exhibition.cover_image && !dominantColors[exhibition.id]) {
+        extractDominantColor(exhibition.cover_image).then(color => {
+          setDominantColors(prev => ({ ...prev, [exhibition.id]: color }))
+        })
+      }
+    })
+  }, [items, dominantColors])
 
   useEffect(() => {
     if (!items.length) return
@@ -90,59 +102,98 @@ export default function Exhibitions() {
 
   return (
     <div className={styles.container}>
-      {items.map((exhibition, i) => (
-        <section
-          key={exhibition.id}
-          ref={el => { if (el) sectionRefs.current[i] = el }}
-          className={styles.section}
-        >
-          <Link
-            to={`/exhibition/${exhibition.slug}`}
-            className={styles.link}
-            aria-label={exhibition.name}
-          >
-            {/* Cover image with parallax */}
-            <div
-              ref={el => { if (el) imageRefs.current[i] = el }}
-              className={styles.imageWrap}
+      {items.map((exhibition, i) => {
+        const dominantColor = dominantColors[exhibition.id] || 'rgb(80, 80, 80)'
+        return (
+          <div key={exhibition.id}>
+            {/* ─── Intro section ─────────────────────────────────────────────────────────────── */}
+            <section
+              ref={el => { if (el) sectionRefs.current[i] = el }}
+              className={styles.section}
             >
-              {exhibition.cover_image ? (
-                <img
-                  src={exhibition.cover_image}
-                  alt={exhibition.name}
-                  className={styles.image}
-                  loading={i === 0 ? 'eager' : 'lazy'}
-                  draggable={false}
-                />
-              ) : (
-                <div className={styles.placeholder}>
-                  <span>{exhibition.name[0]}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Text overlay */}
-            <div
-              ref={el => { if (el) overlayRefs.current[i] = el }}
-              className={styles.overlay}
-            >
-              <span data-anim="" className={styles.index}>
-                {String(i + 1).padStart(2, '0')} / {String(items.length).padStart(2, '0')}
-              </span>
-
-              <div className={styles.overlayBottom}>
-                <div className={styles.overlayLeft}>
-                  <h2 data-anim="" className={styles.name}>{exhibition.name}</h2>
-                  {exhibition.description && (
-                    <p data-anim="" className={styles.description}>{shortDesc(exhibition.description)}</p>
+              <Link
+                to={`/exhibition/${exhibition.slug}`}
+                className={styles.link}
+                aria-label={exhibition.name}
+              >
+                {/* Cover image with parallax */}
+                <div
+                  ref={el => { if (el) imageRefs.current[i] = el }}
+                  className={styles.imageWrap}
+                >
+                  {exhibition.cover_image ? (
+                    <img
+                      src={exhibition.cover_image}
+                      alt={exhibition.name}
+                      className={styles.image}
+                      loading={i === 0 ? 'eager' : 'lazy'}
+                      draggable={false}
+                    />
+                  ) : (
+                    <div className={styles.placeholder}>
+                      <span>{exhibition.name[0]}</span>
+                    </div>
                   )}
                 </div>
-                <span data-anim="" className={styles.cta}>Enter</span>
-              </div>
-            </div>
-          </Link>
-        </section>
-      ))}
+
+                {/* Text overlay */}
+                <div
+                  ref={el => { if (el) overlayRefs.current[i] = el }}
+                  className={styles.overlay}
+                >
+                  <span data-anim="" className={styles.index}>
+                    {String(i + 1).padStart(2, '0')} / {String(items.length).padStart(2, '0')}
+                  </span>
+
+                  <div className={styles.overlayBottom}>
+                    <div className={styles.overlayLeft}>
+                      <h2 data-anim="" className={styles.name}>{exhibition.name}</h2>
+                      {exhibition.description && (
+                        <p data-anim="" className={styles.description}>{shortDesc(exhibition.description)}</p>
+                      )}
+                    </div>
+                    <span data-anim="" className={styles.cta}>Enter</span>
+                  </div>
+                </div>
+              </Link>
+            </section>
+
+            {/* ─── Background section ────────────────────────────────────────────────────────────────── */}
+            {exhibition.background && (
+              <section className={styles.backgroundSection} style={{ backgroundColor: dominantColor }}>
+                <div className={styles.backgroundCard}>
+                  <p className={styles.backgroundText}>{exhibition.background}</p>
+                </div>
+              </section>
+            )}
+
+            {/* ─── Press/Clippings section ──────────────────────────────────────────────────────────────── */}
+            {exhibition.clippings && exhibition.clippings.length > 0 && (
+              <section className={styles.clippingsSection} style={{ backgroundColor: dominantColor }}>
+                <h2 className={styles.clippingsSectionHeading}>Press</h2>
+                <div className={styles.clippingsGrid}>
+                  {exhibition.clippings.map((clippingEntry, entryIndex) => (
+                    <div key={entryIndex} className={styles.clippingCard}>
+                      {clippingEntry.screenshot_image && (
+                        <div className={styles.clippingImageContainer}>
+                          <img
+                            src={clippingEntry.screenshot_image}
+                            alt={clippingEntry.title}
+                            className={styles.clippingImage}
+                          />
+                        </div>
+                      )}
+                      <div className={styles.clippingCardDetails}>
+                        <span className={styles.clippingTitle}>{clippingEntry.title}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }

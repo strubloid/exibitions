@@ -1,10 +1,17 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import type { Artwork } from './artworksSlice'
 
+export interface ClippingEntry {
+  title: string
+  screenshot_image: string | null
+}
+
 export interface Exhibition {
   id: number
   name: string
   description: string | null
+  background: string | null
+  clippings: ClippingEntry[] | null
   slug: string
   cover_image: string | null
   sort_order: number

@@ -30,6 +30,10 @@ class ExhibitionController extends Controller
         $data = $request->validate([
             'name'        => 'required|string|max:255',
             'description' => 'nullable|string',
+            'background'  => 'nullable|string',
+            'clippings'   => 'nullable|array',
+            'clippings.*.title'            => 'required|string|max:255',
+            'clippings.*.screenshot_image' => 'nullable|string',
             'slug'        => 'nullable|string|max:255|unique:exhibitions',
             'sort_order'  => 'integer',
         ]);
@@ -46,6 +50,10 @@ class ExhibitionController extends Controller
         $data = $request->validate([
             'name'        => 'sometimes|string|max:255',
             'description' => 'nullable|string',
+            'background'  => 'sometimes|nullable|string',
+            'clippings'   => 'sometimes|nullable|array',
+            'clippings.*.title'            => 'required|string|max:255',
+            'clippings.*.screenshot_image' => 'nullable|string',
             'slug'        => 'sometimes|string|max:255|unique:exhibitions,slug,' . $exhibition->id,
             'sort_order'  => 'sometimes|integer',
         ]);
@@ -88,6 +96,34 @@ class ExhibitionController extends Controller
         $exhibition->update(['cover_image' => '/storage/exhibitions/' . $filename]);
 
         return response()->json($exhibition->fresh());
+    }
+
+    public function uploadClippingScreenshot(Request $request, Exhibition $exhibition): JsonResponse
+    {
+        $request->validate(['image' => 'required|image|max:30720']);
+
+        $file      = $request->file('image');
+        $filename  = 'clipping-' . $exhibition->id . '-' . uniqid() . '.webp';
+        $directory = storage_path('app/public/exhibitions/clippings');
+
+        if (!is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        $mimeType = $file->getMimeType();
+        $source   = match (true) {
+            str_contains($mimeType, 'jpeg') => imagecreatefromjpeg($file->getRealPath()),
+            str_contains($mimeType, 'png')  => imagecreatefrompng($file->getRealPath()),
+            str_contains($mimeType, 'webp') => imagecreatefromwebp($file->getRealPath()),
+            default                         => imagecreatefromjpeg($file->getRealPath()),
+        };
+
+        imagewebp($source, $directory . '/' . $filename, 85);
+        imagedestroy($source);
+
+        return response()->json([
+            'screenshot_image' => '/storage/exhibitions/clippings/' . $filename,
+        ]);
     }
 
     public function syncArtworks(Request $request, Exhibition $exhibition): JsonResponse

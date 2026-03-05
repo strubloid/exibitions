@@ -8,12 +8,14 @@ import styles from './ExhibitionView.module.scss'
 
 export default function ExhibitionView() {
   const { slug } = useParams<{ slug: string }>()
-  const dispatch  = useDispatch<AppDispatch>()
+  const dispatch = useDispatch<AppDispatch>()
   const { current: exhibition, loading } = useSelector((state: RootState) => state.exhibitions)
 
   useEffect(() => {
     if (slug) dispatch(fetchExhibition(slug))
-    return () => { dispatch(clearCurrent()) }
+    return () => {
+      dispatch(clearCurrent())
+    }
   }, [slug, dispatch])
 
   if (loading || !exhibition) {

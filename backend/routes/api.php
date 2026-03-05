@@ -24,5 +24,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/exhibitions/{exhibition}', [ExhibitionController::class, 'update']);
     Route::delete('/exhibitions/{exhibition}', [ExhibitionController::class, 'destroy']);
     Route::post('/exhibitions/{exhibition}/image', [ExhibitionController::class, 'uploadCover']);
+    Route::post('/exhibitions/{exhibition}/clipping-screenshot', [ExhibitionController::class, 'uploadClippingScreenshot']);
     Route::post('/exhibitions/{exhibition}/artworks', [ExhibitionController::class, 'syncArtworks']);
 });

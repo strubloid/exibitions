@@ -22,8 +22,13 @@ interface Artwork {
   pivot?: { sort_order: number }
 }
 
+interface ClippingFormEntry {
+  title: string
+  screenshot_image: string
+}
+
 const EMPTY_ARTWORK_FORM    = { title: '', description: '', sort_order: 0, animation_style: 'fade' }
-const EMPTY_EXHIBITION_FORM = { name: '', description: '', slug: '', sort_order: 0 }
+const EMPTY_EXHIBITION_FORM = { name: '', description: '', background: '', slug: '', sort_order: 0 }
 
 export default function AdminPanel() {
   const token    = useSelector((state: RootState) => state.auth.token)
@@ -49,6 +54,8 @@ export default function AdminPanel() {
   const [managingEx, setManagingEx]   = useState<number | null>(null)
   const [assignments, setAssignments] = useState<Record<number, { checked: boolean; order: number }>>({})
   const [savingAssign, setSavingAssign] = useState(false)
+  const [clippingEntries, setClippingEntries] = useState<ClippingFormEntry[]>([])
+  const [exMessage, setExMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   const authHeaders = {
     Authorization: `Bearer ${token}`,
@@ -130,19 +137,42 @@ export default function AdminPanel() {
 
   const handleEditEx = (ex: Exhibition) => {
     setEditingEx(ex)
-    setExForm({ name: ex.name, description: ex.description ?? '', slug: ex.slug, sort_order: ex.sort_order })
+    setExForm({ name: ex.name, description: ex.description ?? '', background: ex.background ?? '', slug: ex.slug, sort_order: ex.sort_order })
+    setClippingEntries(
+      (ex.clippings ?? []).map((clippingEntry) => ({
+        title: clippingEntry.title,
+        screenshot_image: clippingEntry.screenshot_image ?? '',
+      }))
+    )
   }
 
-  const handleCancelEx = () => { setEditingEx(null); setExForm(EMPTY_EXHIBITION_FORM) }
+  const handleCancelEx = () => { setEditingEx(null); setExForm(EMPTY_EXHIBITION_FORM); setClippingEntries([]) }
 
   const handleSaveEx = async () => {
     setSavingEx(true)
-    if (editingEx) {
-      await fetch(`/api/exhibitions/${editingEx.id}`, { method: 'PUT', headers: authHeaders, body: JSON.stringify(exForm) })
-    } else {
-      await fetch('/api/exhibitions', { method: 'POST', headers: authHeaders, body: JSON.stringify(exForm) })
+    try {
+      const payload = {
+        ...exForm,
+        clippings: clippingEntries,
+      }
+
+      if (editingEx) {
+        const res = await fetch(`/api/exhibitions/${editingEx.id}`, { method: 'PUT', headers: authHeaders, body: JSON.stringify(payload) })
+        if (!res.ok) throw new Error('Save failed')
+        setExMessage({ type: 'success', text: `Exhibition "${exForm.name}" updated` })
+      } else {
+        const res = await fetch('/api/exhibitions', { method: 'POST', headers: authHeaders, body: JSON.stringify(payload) })
+        if (!res.ok) throw new Error('Create failed')
+        setExMessage({ type: 'success', text: `Exhibition "${exForm.name}" created` })
+      }
+      setTimeout(() => setExMessage(null), 3000)
+      handleCancelEx()
+      fetchExhibitions()
+    } catch {
+      setExMessage({ type: 'error', text: 'Failed to save exhibition' })
+      setTimeout(() => setExMessage(null), 3000)
     }
-    setSavingEx(false); handleCancelEx(); fetchExhibitions()
+    setSavingEx(false)
   }
 
   const handleDeleteEx = async (id: number) => {
@@ -156,6 +186,35 @@ export default function AdminPanel() {
     const fd = new FormData(); fd.append('image', file)
     await fetch(`/api/exhibitions/${ex.id}/image`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' }, body: fd })
     setUploadingEx(null); fetchExhibitions()
+  }
+
+  const handleClippingScreenshotPaste = (entryIndex: number, imageDataUrl: string) => {
+    setClippingEntries((previousEntries) =>
+      previousEntries.map((entry, index) =>
+        index === entryIndex ? { ...entry, screenshot_image: imageDataUrl } : entry
+      )
+    )
+  }
+
+  const addClippingEntry = () => {
+    setClippingEntries((previousEntries) => [
+      ...previousEntries,
+      { title: '', screenshot_image: '' },
+    ])
+  }
+
+  const removeClippingEntry = (entryIndex: number) => {
+    setClippingEntries((previousEntries) =>
+      previousEntries.filter((_, index) => index !== entryIndex)
+    )
+  }
+
+  const updateClippingTitle = (entryIndex: number, newTitle: string) => {
+    setClippingEntries((previousEntries) =>
+      previousEntries.map((entry, index) =>
+        index === entryIndex ? { ...entry, title: newTitle } : entry
+      )
+    )
   }
 
   const handleManage = async (ex: Exhibition) => {
@@ -269,6 +328,57 @@ export default function AdminPanel() {
             <div className={styles.field}><label>Description</label>
               <textarea placeholder="Description" value={exForm.description} rows={3} onChange={(e) => setExForm((f) => ({ ...f, description: e.target.value }))} />
             </div>
+            <div className={styles.field}>
+              <label>Background</label>
+              <textarea placeholder="Venue, city, dates, exhibition context…" value={exForm.background} rows={5} onChange={(e) => setExForm((f) => ({ ...f, background: e.target.value }))} />
+            </div>
+            <div className={styles.clippingsManager}>
+              <div className={styles.clippingsManagerHeader}>
+                <label className={styles.clippingsManagerLabel}>Press Clippings</label>
+                <button type="button" onClick={addClippingEntry} className={styles.addClippingBtn}>+ Add</button>
+              </div>
+              {clippingEntries.map((clippingEntry, entryIndex) => (
+                <div key={entryIndex} className={styles.clippingEditorRow}>
+                  <div className={styles.clippingEditorFields}>
+                    <input
+                      placeholder="Title"
+                      value={clippingEntry.title}
+                      onChange={(e) => updateClippingTitle(entryIndex, e.target.value)}
+                    />
+                  </div>
+                  <div className={styles.clippingEditorActions}>
+                    {clippingEntry.screenshot_image && (
+                      <img src={clippingEntry.screenshot_image} alt="screenshot" className={styles.clippingScreenshotPreview} />
+                    )}
+                    <div
+                      className={styles.screenshotPasteArea}
+                      onPaste={(e) => {
+                        const items = e.clipboardData?.items ?? []
+                        for (let i = 0; i < items.length; i++) {
+                          if (items[i].type.includes('image')) {
+                            const blob = items[i].getAsFile()
+                            if (blob) {
+                              const reader = new FileReader()
+                              reader.onload = (event) => {
+                                const dataUrl = event.target?.result as string
+                                handleClippingScreenshotPaste(entryIndex, dataUrl)
+                              }
+                              reader.readAsDataURL(blob)
+                            }
+                            e.preventDefault()
+                          }
+                        }
+                      }}
+                      tabIndex={0}
+                      title="Paste screenshot here (Ctrl+V)"
+                    >
+                      📋 Paste screenshot
+                    </div>
+                    <button type="button" onClick={() => removeClippingEntry(entryIndex)} className={styles.deleteBtn}>Remove</button>
+                  </div>
+                </div>
+              ))}
+            </div>
             <div className={styles.row}>
               <div className={styles.field}><label>Slug (auto if empty)</label>
                 <input placeholder="my-exhibition" value={exForm.slug} onChange={(e) => setExForm((f) => ({ ...f, slug: e.target.value }))} />
@@ -285,9 +395,9 @@ export default function AdminPanel() {
 
           <section className={styles.listSection}>
             <h2>Exhibitions ({exhibitions.length})</h2>
-            {message && (
-              <div className={`${styles.message} ${styles[`message-${message.type}`]}`}>
-                {message.text}
+            {exMessage && (
+              <div className={`${styles.message} ${styles[`message-${exMessage.type}`]}`}>
+                {exMessage.text}
               </div>
             )}
             {exhibitions.map((ex) => (

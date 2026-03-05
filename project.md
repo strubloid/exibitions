@@ -272,13 +272,36 @@ A production-ready, containerized, full-stack art exhibition platform for immers
 
 ## NEXT PHASE
 
-### Phase 19 — Exhibition Detail: Background & Press Clippings ⏳
-- On the individual exhibition page, below the 100vh cover intro, add two new scroll sections:
-  - **Background**: a text section describing where and when the exhibition was presented (venue, city, dates, context). Stored as a `background` text field on the exhibition.
-  - **Clippings**: a press coverage section listing links from internet, journals, and magazines where the exhibition was featured. Stored as a JSON array of `{ title, url, source, thumbnail, screenshot_image }` on the exhibition, that usualy people save the screenshot of it, as websites can be down, a screenshot cant.
-- Database: new migration adding `background` (text, nullable) and `clippings` (JSON, nullable) columns to the `exhibitions` table
-- Admin panel: textarea for background text + a list manager to add/remove clipping entries (title, URL, source name, optional thumbnail URL)
-- Frontend (ExhibitionView): after the 100vh cover, render Background section then Clippings section, then the artwork Gallery below
+### Phase 19 — Exhibition Detail: Background & Press Clippings ✅
+**Layout Design:**
+- Full-screen background sections and press sections displayed on **homepage** as part of continuous scrolling experience
+- Each exhibition on homepage: intro/cover → background section → press section → (then continues to next exhibition)
+- Full-screen background section with **centered text card** + **dynamic color background** (extracted from cover image)
+- Full-screen press section with **masonry grid** of clipping cards (2-3 columns responsive)
+- Individual exhibition page at `/exhibitions/{slug}` shows only intro + gallery (no background/press)
+
+**Database & Backend:**
+- Migration: `background` (text, nullable) and `clippings` (JSON, nullable) columns on exhibitions ✅
+- Clippings simplified to 2 fields: `title` + `screenshot_image` (base64 data URL pasted from clipboard) ✅
+- Validation: title required, screenshot_image nullable string (accepts base64) ✅
+
+**Admin Panel:**
+- Background textarea (5 rows, preserves line breaks with white-space: pre-wrap) ✅
+- Clippings manager: title input + paste area for screenshots (Ctrl+V clipboard paste) ✅
+- Converts pasted images to base64, stores in screenshot_image field ✅
+- Success/error toast notifications with 3-second auto-dismiss ✅
+
+**Frontend - Homepage (Exhibitions.tsx):**
+- ClippingEntry interface: `{ title: string; screenshot_image: string | null }` ✅
+- Exhibitions component renders: intro → background → press for each exhibition ✅
+- Background section: centered, full-screen height, background color from image dominant color ✅
+- Press section: full-screen height, masonry grid layout (1-3 columns responsive) ✅
+- Color extraction: Canvas API utility `extractDominantColor()` darkens colors 30% for contrast ✅
+- All sections stacked vertically with smooth transitions
+
+**Frontend - Individual Page (ExhibitionView.tsx):**
+- No background or press sections on individual page ✅
+- Shows only: intro → gallery (artworks) ✅
 
 ### Phase 20 — Preloading & Performance
 - Prefetch next artwork image: `<link rel="prefetch">` injected dynamically after current image loads
