@@ -18,6 +18,7 @@ interface Artwork {
   image: string | null
   sort_order: number
   animation_style: string
+  updated_at: string
   pivot?: { sort_order: number }
 }
 
