@@ -23,6 +23,7 @@ export default function Exhibitions() {
   const sectionRefs = useRef<HTMLElement[]>([])
   const imageRefs   = useRef<HTMLDivElement[]>([])
   const overlayRefs = useRef<HTMLDivElement[]>([])
+  const clippingGridRefs = useRef<HTMLDivElement[]>([])
   const [dominantColors, setDominantColors] = useState<Record<number, string>>({})
   const [selectedClipping, setSelectedClipping] = useState<{ exhibitionId: number; clippingIndex: number } | null>(null)
 
@@ -82,6 +83,40 @@ export default function Exhibitions() {
             },
           }
         )
+      })
+
+      // Clippings animation: Cards slide in + light up as they scroll into view
+      // Each card animates with staggered delay based on its position
+      items.forEach((_, i) => {
+        const clippingGrid = clippingGridRefs.current[i]
+        if (!clippingGrid) return
+
+        const cards = clippingGrid.querySelectorAll('[data-clipping-card]')
+        if (!cards.length) return
+
+        // Each card animates individually with staggered viewport positioning
+        cards.forEach((card, cardIndex) => {
+          const cardCount = cards.length
+          // Stagger each card's trigger point: earlier cards trigger higher up in viewport
+          const delayPercent = (cardIndex / Math.max(1, cardCount - 1)) * 40  // 0% to 40% stagger
+          const startViewportPercent = 75 - delayPercent
+          const endViewportPercent = 25 - delayPercent
+
+          gsap.fromTo(card,
+            { xPercent: -100, filter: 'brightness(0.4)' },
+            {
+              xPercent: 0,
+              filter: 'brightness(1)',
+              ease: 'none',
+              scrollTrigger: {
+                trigger: card,
+                start: `top ${startViewportPercent}%`,
+                end: `top ${endViewportPercent}%`,
+                scrub: 1,
+              },
+            }
+          )
+        })
       })
     })
 
@@ -182,13 +217,17 @@ export default function Exhibitions() {
                 <h2 className={styles.clippingsTitle}>Check it out where I was!</h2>
                 <div className={styles.clippingsLabel}>Press</div>
                 <div className={styles.clippingsContent}>
-                  <div className={styles.clippingsGrid}>
+                  <div
+                    className={styles.clippingsGrid}
+                    ref={el => { if (el) clippingGridRefs.current[i] = el }}
+                  >
                     {exhibition.clippings.map((clippingEntry, entryIndex) => (
                       <div
                         key={entryIndex}
                         className={styles.clippingCard}
+                        data-clipping-card=""
                         onClick={() => clippingEntry.screenshot_image && setSelectedClipping({ exhibitionId: exhibition.id, clippingIndex: entryIndex })}
-                        style={{ cursor: clippingEntry.screenshot_image ? 'pointer' : 'default' }}
+                        style={{ cursor: clippingEntry.screenshot_image ? 'pointer' : 'default', filter: 'brightness(0.4)' }}
                       >
                         {clippingEntry.screenshot_image && (
                           <div className={styles.clippingImageContainer}>

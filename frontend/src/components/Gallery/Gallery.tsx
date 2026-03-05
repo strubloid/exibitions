@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -152,7 +152,12 @@ function scaleAtDistanceFromActive(distanceInLines: number): number {
 export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
     const dispatch = useDispatch<AppDispatch>();
     const { items: reduxItems, loading: reduxLoading } = useSelector((state: RootState) => state.artworks);
-    const items = [...(propArtworks ?? reduxItems)].sort((a, b) => a.sort_order - b.sort_order);
+    // useMemo prevents a new array reference on every render, which would
+    // otherwise re-trigger the animation effect and kill external scroll triggers
+    const items = useMemo(
+        () => [...(propArtworks ?? reduxItems)].sort((a, b) => a.sort_order - b.sort_order),
+        [propArtworks, reduxItems]
+    );
     const loading = propArtworks !== undefined ? false : reduxLoading;
 
     const containerRef = useRef<HTMLDivElement>(null);
@@ -184,7 +189,8 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
         const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
         const ctx = gsap.context(() => {
-            ScrollTrigger.getAll().forEach((t) => t.kill());
+            // ctx.revert() in the cleanup handles removing Gallery's own triggers;
+            // killing ALL triggers here would destroy external scroll triggers (e.g. background cards)
 
             items.forEach((artwork, i) => {
                 const layer = layerRefs.current[i];

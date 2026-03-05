@@ -126,9 +126,18 @@
   50%       { opacity: 0.6; }
 }
 
+// ─── Background sticky wrapper ────────────────────────────────────────────────
+// Sticks in viewport while its parent container (with explicit px height) is scrolled
+.bgSticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;  // clips cards during slide-in so they appear from the edge
+}
+
 // ─── Background section ────────────────────────────────────────────────────────
 .backgroundSection {
-  min-height: 100vh;
+  height: 100%;       // fills the sticky frame (100vh)
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -211,6 +220,7 @@
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 2rem;
   width: 100%;
+  overflow: hidden;
 
   @media (min-width: 768px) {
     grid-template-columns: repeat(3, 1fr);
@@ -227,7 +237,8 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 2rem 1.5rem;
   border-radius: 4px;
-  transition: all 0.3s ease;
+  // No transition: all — let GSAP control transforms and filter
+  transition: background 0.3s ease, border-color 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -252,9 +263,17 @@
   font-weight: 300;
 }
 
+// ─── Clippings sticky wrapper ──────────────────────────────────────────────────
+.clippingSticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
 // ─── Clippings section ─────────────────────────────────────────────────────────
 .clippingsSection {
-  min-height: 100vh;
+  height: 100%;       // fills the sticky frame (100vh)
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -354,7 +373,8 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 2rem 1.5rem;
   border-radius: 4px;
-  transition: all 0.3s ease;
+  // No transition: all — let GSAP control transforms and filter
+  transition: background 0.3s ease, border-color 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;

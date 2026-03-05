@@ -197,7 +197,7 @@
   top: 0;
   left: 0;
   width: 100%;
-  font-size: clamp(4rem, 15vw, 12rem);
+  font-size: clamp(4rem, 15vw, 9rem);
   font-weight: 200;
   letter-spacing: -0.02em;
   color: rgba(255, 255, 255, 0.04);
@@ -243,15 +243,25 @@
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 1200px;
+  // max-width: 1200px;
+  max-width: 1580px;
   margin-top: 1rem;
 
+  // for mobile
+  @media (max-width: 767px) {
+    margin-top: 1rem;
+    max-width: 100%;
+  }
+  // for tablet
   @media (min-width: 768px) {
     margin-top: 2rem;
+    max-width: 100%;
   }
 
+  // for desktop
   @media (min-width: 1024px) {
     margin-top: 3rem;
+    max-width: 1200px;
   }
 }
 
@@ -323,7 +333,7 @@
   top: 0;
   left: 0;
   width: 100%;
-  font-size: clamp(4rem, 15vw, 12rem);
+  font-size: clamp(4rem, 15vw, 9rem);
   font-weight: 200;
   letter-spacing: -0.02em;
   color: rgba(255, 255, 255, 0.04);
