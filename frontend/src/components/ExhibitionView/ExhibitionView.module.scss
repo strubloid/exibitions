@@ -107,12 +107,15 @@
 .introNav {
   position: absolute;
   bottom: 3rem;
-  right: 4rem;
+  right: 8rem;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.55rem;
+  flex-direction: row-reverse;
+  align-items: stretch;
+  gap: 2rem;
   z-index: 10;
+  justify-content: center;
+  align-content: center;
+
 
   @media (max-width: 600px) {
     bottom: 2rem;
@@ -124,7 +127,7 @@
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.18);
   color: rgba(255, 255, 255, 0.42);
-  font-size: 0.55rem;
+  font-size: 1.7rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
   padding: 0.45rem 0.85rem;
@@ -146,14 +149,14 @@
 // ─── Fixed scroll-to-top button ───────────────────────────────────────────────
 .scrollTopBtn {
   position: fixed;
-  bottom: 2.5rem;
+  bottom: 3.1rem;
   right: 3rem;
   z-index: 50;
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: rgba(255, 255, 255, 0.28);
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 2.7rem;
+  height: 2.7rem;
   display: flex;
   align-items: center;
   justify-content: center;
