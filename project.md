@@ -294,14 +294,26 @@ A production-ready, containerized, full-stack art exhibition platform for immers
 **Frontend - Homepage (Exhibitions.tsx):**
 - ClippingEntry interface: `{ title: string; screenshot_image: string | null }` ✅
 - Exhibitions component renders: intro → background → press for each exhibition ✅
-- Background section: centered, full-screen height, background color from image dominant color ✅
+- Background section: full-screen with masonry grid layout ✅
+  - Large exhibition name as watermark background (15vw font, 4% opacity, uppercase)
+  - Text content split by double newlines (`\n\n`) into masonry grid cards
+  - Frosted glass cards with backdrop blur, semi-transparent borders
+  - Responsive grid: 3-4 columns desktop, 3 tablet, auto-fit mobile (minmax 220px)
+  - Varied card heights via `nth-child()` selectors for visual rhythm and interest
+  - Hover effect: card brightens, lifts slightly (2px translateY)
+  - Dynamic background color from dominant image color
 - Press section: full-screen height, masonry grid layout (1-3 columns responsive) ✅
 - Color extraction: Canvas API utility `extractDominantColor()` darkens colors 30% for contrast ✅
 - All sections stacked vertically with smooth transitions
 
 **Frontend - Individual Page (ExhibitionView.tsx):**
-- No background or press sections on individual page ✅
-- Shows only: intro → gallery (artworks) ✅
+- Shows: intro → gallery → **background section** (at the end) ✅
+- Background section identical design to homepage with:
+  - Large exhibition name watermark
+  - Masonry grid of text paragraphs (split by `\n\n`)
+  - Dynamic dominant color from cover image
+  - Frosted glass cards with hover effects
+- Press section NOT shown on individual pages (only on homepage) ✅
 
 ### Phase 20 — Preloading & Performance
 - Prefetch next artwork image: `<link rel="prefetch">` injected dynamically after current image loads

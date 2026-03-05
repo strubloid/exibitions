@@ -24,6 +24,7 @@ export default function Exhibitions() {
   const imageRefs   = useRef<HTMLDivElement[]>([])
   const overlayRefs = useRef<HTMLDivElement[]>([])
   const [dominantColors, setDominantColors] = useState<Record<number, string>>({})
+  const [selectedClipping, setSelectedClipping] = useState<{ exhibitionId: number; clippingIndex: number } | null>(null)
 
   useEffect(() => {
     dispatch(fetchExhibitions())
@@ -161,8 +162,16 @@ export default function Exhibitions() {
             {/* ─── Background section ────────────────────────────────────────────────────────────────── */}
             {exhibition.background && (
               <section className={styles.backgroundSection} style={{ backgroundColor: dominantColor }}>
-                <div className={styles.backgroundCard}>
-                  <p className={styles.backgroundText}>{exhibition.background}</p>
+                <h2 className={styles.backgroundTitle}>{exhibition.name}</h2>
+                <div className={styles.backgroundLabel}>Background</div>
+                <div className={styles.backgroundContent}>
+                  <div className={styles.backgroundMasonryGrid}>
+                    {exhibition.background.split('\n').filter(line => line.trim()).map((line, idx) => (
+                      <div key={idx} className={styles.backgroundMasonryItem}>
+                        <p className={styles.backgroundText}>{line}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </section>
             )}
@@ -170,30 +179,51 @@ export default function Exhibitions() {
             {/* ─── Press/Clippings section ──────────────────────────────────────────────────────────────── */}
             {exhibition.clippings && exhibition.clippings.length > 0 && (
               <section className={styles.clippingsSection} style={{ backgroundColor: dominantColor }}>
-                <h2 className={styles.clippingsSectionHeading}>Press</h2>
-                <div className={styles.clippingsGrid}>
-                  {exhibition.clippings.map((clippingEntry, entryIndex) => (
-                    <div key={entryIndex} className={styles.clippingCard}>
-                      {clippingEntry.screenshot_image && (
-                        <div className={styles.clippingImageContainer}>
-                          <img
-                            src={clippingEntry.screenshot_image}
-                            alt={clippingEntry.title}
-                            className={styles.clippingImage}
-                          />
+                <h2 className={styles.clippingsTitle}>Check it out where I was!</h2>
+                <div className={styles.clippingsLabel}>Press</div>
+                <div className={styles.clippingsContent}>
+                  <div className={styles.clippingsGrid}>
+                    {exhibition.clippings.map((clippingEntry, entryIndex) => (
+                      <div
+                        key={entryIndex}
+                        className={styles.clippingCard}
+                        onClick={() => clippingEntry.screenshot_image && setSelectedClipping({ exhibitionId: exhibition.id, clippingIndex: entryIndex })}
+                        style={{ cursor: clippingEntry.screenshot_image ? 'pointer' : 'default' }}
+                      >
+                        {clippingEntry.screenshot_image && (
+                          <div className={styles.clippingImageContainer}>
+                            <img
+                              src={clippingEntry.screenshot_image}
+                              alt={clippingEntry.title}
+                              className={styles.clippingImage}
+                            />
+                          </div>
+                        )}
+                        <div className={styles.clippingCardDetails}>
+                          <span className={styles.clippingTitle}>{clippingEntry.title}</span>
                         </div>
-                      )}
-                      <div className={styles.clippingCardDetails}>
-                        <span className={styles.clippingTitle}>{clippingEntry.title}</span>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </section>
             )}
           </div>
         )
       })}
+
+      {selectedClipping && items.find(ex => ex.id === selectedClipping.exhibitionId)?.clippings?.[selectedClipping.clippingIndex]?.screenshot_image && (
+        <div className={styles.modal} onClick={() => setSelectedClipping(null)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.modalClose} onClick={() => setSelectedClipping(null)}>✕</button>
+            <img
+              src={items.find(ex => ex.id === selectedClipping.exhibitionId)!.clippings![selectedClipping.clippingIndex].screenshot_image!}
+              alt={items.find(ex => ex.id === selectedClipping.exhibitionId)!.clippings![selectedClipping.clippingIndex].title}
+              className={styles.modalImage}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
