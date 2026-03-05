@@ -22,7 +22,7 @@ const CLIP_NONE_H = "inset(0% 50% 0% 50%)";
 
 // Variable-scroll architecture
 const TRANSITION_VH = 80; // vh for enter/exit clip-path animation
-const SETTLE_VH = 15; // vh of stable image before poem starts
+const SETTLE_VH = 7; // vh of stable image before poem starts
 const SCROLL_PER_LINE = 8; // vh per poem line (snap handles one-at-a-time)
 const LINE_H = 70; // px — must match .poemLine height in SCSS
 
