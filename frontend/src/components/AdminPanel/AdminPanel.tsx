@@ -285,6 +285,11 @@ export default function AdminPanel() {
 
           <section className={styles.listSection}>
             <h2>Exhibitions ({exhibitions.length})</h2>
+            {message && (
+              <div className={`${styles.message} ${styles[`message-${message.type}`]}`}>
+                {message.text}
+              </div>
+            )}
             {exhibitions.map((ex) => (
               <div key={ex.id}>
                 <div className={styles.item}>
