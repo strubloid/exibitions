@@ -24,7 +24,8 @@ const CLIP_NONE_H = "inset(0% 50% 0% 50%)";
 const TRANSITION_VH = 80; // vh for enter/exit clip-path animation
 const SETTLE_VH = 7; // vh of stable image before poem starts
 const SCROLL_PER_LINE = 8; // vh per poem line (snap handles one-at-a-time)
-const LINE_H = 70; // px — must match .poemLine height in SCSS
+const LINE_H = 90; // px — must match .poemLine height in SCSS
+const TRAIL_LINES = 5; // extra scroll lines of hold after the last poem line
 
 // ── Paragraph-aware poem parser ─────────────────────────────────────────────
 // Collapses 1+ consecutive blank lines into a single visual spacer.
@@ -102,7 +103,7 @@ function computePositions(items: Artwork[], VH: number): Positions {
         const { realCount } = parsePoemItems(artwork.description ?? "");
         const nLines = Math.max(1, realCount);
         poemStarts.push(cursor + SETTLE_PX);
-        poemEnds.push(cursor + SETTLE_PX + nLines * LINE_PX);
+        poemEnds.push(cursor + SETTLE_PX + nLines * LINE_PX + TRAIL_LINES * LINE_PX);
         cursor = poemEnds[poemEnds.length - 1] + TRANS_PX;
     }
 

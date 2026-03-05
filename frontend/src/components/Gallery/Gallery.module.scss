@@ -218,16 +218,16 @@
 // Track is positioned absolutely — GSAP handles xPercent: -50 and y
 .poemTrack {
   position: absolute;
-  top: calc(50% - 35px);   // 45px = LINE_H/2, so line-0 center aligns to viewport center
+  top: calc(50% - 45px);   // LINE_H/2 = 45px, so line-0 center aligns to viewport center
   left: 50%;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-// Real text line — height must match LINE_H constant in Gallery.tsx (70px)
+// Real text line — height must match LINE_H constant in Gallery.tsx (90px)
 .poemLine {
-  height: 70px;
+  height: 90px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -251,7 +251,7 @@
   color: #fff;
   font-size: clamp(1.2rem, 3vw, 3rem);
   letter-spacing: 0.04em;
-  min-width: 70vw;
+  // min-width: 70vw;
   max-width: 100vw;
   margin: 0 auto;
   padding: 0.3em;
@@ -266,7 +266,7 @@
 
 // Blank line between stanzas — same height so scroll math stays uniform
 .poemSpacer {
-  height: 70px;
+  height: 90px;
   opacity: 0;
 }
 
