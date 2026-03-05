@@ -237,7 +237,7 @@ export default function AdminPanel() {
             {artworks.map((artwork) => (
               <div key={artwork.id} className={styles.item}>
                 <div className={styles.thumb}>
-                  {artwork.image ? <img src={`${artwork.image}?t=${artwork.updated_at}`} alt={artwork.title} /> : <span>No image</span>}
+                  {artwork.image ? <img src={`${artwork.image}?t=${artwork.updated_at}&r=${Math.random()}`} alt={artwork.title} /> : <span>No image</span>}
                 </div>
                 <div className={styles.info}>
                   <strong>{artwork.title}</strong>
@@ -289,7 +289,7 @@ export default function AdminPanel() {
               <div key={ex.id}>
                 <div className={styles.item}>
                   <div className={styles.thumb}>
-                    {ex.cover_image ? <img src={ex.cover_image} alt={ex.name} /> : <span>No cover</span>}
+                    {ex.cover_image ? <img src={`${ex.cover_image}?t=${ex.updated_at}&r=${Math.random()}`} alt={ex.name} /> : <span>No cover</span>}
                   </div>
                   <div className={styles.info}>
                     <strong>{ex.name}</strong>
