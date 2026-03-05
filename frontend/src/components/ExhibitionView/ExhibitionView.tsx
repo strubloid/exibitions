@@ -220,7 +220,28 @@ export default function ExhibitionView() {
             <span>scroll</span>
           </div>
         </div>
+
+        <div className={styles.introNav}>
+          {bgLines.length > 0 && (
+            <button
+              className={styles.sectionBtn}
+              onClick={() => bgContainerRef.current?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              Background
+            </button>
+          )}
+          {exhibition.clippings && exhibition.clippings.length > 0 && (
+            <button
+              className={styles.sectionBtn}
+              onClick={() => clippingContainerRef.current?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              Press
+            </button>
+          )}
+        </div>
       </section>
+
+      <button className={styles.scrollTopBtn} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>↑</button>
 
       <Gallery artworks={exhibition.artworks ?? []} />
 

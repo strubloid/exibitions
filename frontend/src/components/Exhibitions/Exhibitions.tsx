@@ -308,7 +308,27 @@ export default function Exhibitions() {
                         <p data-anim="" className={styles.description}>{shortDesc(exhibition.description)}</p>
                       )}
                     </div>
-                    <span data-anim="" className={styles.cta}>Enter</span>
+                    <div className={styles.overlayActions}>
+                      {bgLines.length > 0 && (
+                        <button
+                          data-anim=""
+                          className={styles.sectionBtn}
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); bgContainerRefs.current[i]?.scrollIntoView({ behavior: 'smooth' }) }}
+                        >
+                          Background
+                        </button>
+                      )}
+                      {exhibition.clippings && exhibition.clippings.length > 0 && (
+                        <button
+                          data-anim=""
+                          className={styles.sectionBtn}
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); clippingContainerRefs.current[i]?.scrollIntoView({ behavior: 'smooth' }) }}
+                        >
+                          Press
+                        </button>
+                      )}
+                      <span data-anim="" className={styles.cta}>Enter →</span>
+                    </div>
                   </div>
                 </div>
               </Link>
@@ -400,6 +420,8 @@ export default function Exhibitions() {
           </div>
         </div>
       )}
+
+      <button className={styles.scrollTopBtn} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>↑</button>
     </div>
   )
 }

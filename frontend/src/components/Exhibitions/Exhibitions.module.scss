@@ -28,7 +28,8 @@
   }
 
   &:hover .cta {
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.95);
+    border-color: rgba(255, 255, 255, 0.6);
     letter-spacing: 0.35em;
   }
 }
@@ -135,20 +136,88 @@
   }
 }
 
-// ─── CTA (bottom-right) ───────────────────────────────────────────────────────
-.cta {
+// ─── Bottom-right action cluster ─────────────────────────────────────────────
+.overlayActions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.55rem;
   flex-shrink: 0;
-  align-self: flex-end;
-  font-size: 0.65rem;
+}
+
+.sectionBtn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.42);
+  font-size: 0.55rem;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.3);
-  transition: color 0.4s, letter-spacing 0.4s;
+  padding: 0.45rem 0.85rem;
+  cursor: pointer;
+  font-family: inherit;
   white-space: nowrap;
-  padding-bottom: 0.1em;
+  transition: color 0.25s, border-color 0.25s;
+
+  &:hover {
+    color: rgba(255, 255, 255, 0.85);
+    border-color: rgba(255, 255, 255, 0.45);
+  }
 
   @media (max-width: 480px) {
     display: none;
+  }
+}
+
+// ─── CTA (bottom-right, more prominent) ──────────────────────────────────────
+.cta {
+  flex-shrink: 0;
+  font-size: 0.65rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  padding: 0.6rem 1.1rem;
+  white-space: nowrap;
+  transition: color 0.4s, letter-spacing 0.4s, border-color 0.4s;
+
+  .link:hover & {
+    color: rgba(255, 255, 255, 0.95);
+    border-color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 0.35em;
+  }
+
+  @media (max-width: 480px) {
+    display: none;
+  }
+}
+
+// ─── Fixed scroll-to-top button ───────────────────────────────────────────────
+.scrollTopBtn {
+  position: fixed;
+  bottom: 2.5rem;
+  right: 3rem;
+  z-index: 50;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.28);
+  width: 2.2rem;
+  height: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: color 0.2s, border-color 0.2s;
+
+  &:hover {
+    color: rgba(255, 255, 255, 0.75);
+    border-color: rgba(255, 255, 255, 0.42);
+  }
+
+  @media (max-width: 600px) {
+    bottom: 1.5rem;
+    right: 1.75rem;
   }
 }
 
