@@ -89,7 +89,7 @@ interface Positions {
 
 function computePositions(items: Artwork[], VH: number): Positions {
     const TRANS_PX = (TRANSITION_VH / 100) * VH;
-    const SETTLE_PX = (SETTLE_VH / 20) * VH;
+    const SETTLE_PX = (SETTLE_VH / 80) * VH;
     const LINE_PX = (SCROLL_PER_LINE / 100) * VH;
 
     const starts: number[] = [];
@@ -121,10 +121,12 @@ function lineOpacity(distance: number): number {
     return lerp(0.25, 0.0, abs - 2);
 }
 
+// Only the centered line is 1.5x, others are 1 or less
 function lineScale(distance: number): number {
     const abs = Math.abs(distance);
-    if (abs < 1) return lerp(1.25, 0.85, abs);
-    if (abs < 2) return lerp(0.85, 0.5, abs - 1);
+    if (abs < 0.01) return 1.3; // exactly centered
+    if (abs < 1) return lerp(0.8, 0.75, abs); // next-nearest lines
+    if (abs < 2) return lerp(0.65, 0.4, abs - 1);
     return 0.5;
 }
 
@@ -307,7 +309,7 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                         snap: {
                             snapTo: 1 / stepCount,
                             directional: true,
-                            duration: { min: 0.2, max: 0.4 },
+                            duration: { min: 0.1, max: 0.3 },
                             delay: 0.05,
                             ease: "power2.inOut",
                         },
@@ -320,17 +322,26 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                             const trackY = lerp(poem.trackYForStep[lo] ?? 0, poem.trackYForStep[hi] ?? 0, frac);
                             setY(-trackY);
 
+                            const selectedIdx = Math.round(step);
+
                             for (let j = 0; j < lineEls.length; j++) {
                                 if (!lineEls[j]) continue;
                                 const item = poem.items[j];
+
                                 if (item.type === "spacer") {
                                     qOpacity[j]?.(0);
                                     qScale[j]?.(1);
+                                    lineEls[j].classList.remove(styles.poemLineSelected);
                                 } else {
                                     // Distance is between current scroll step and this line's real index
                                     const dist = item.scrollIdx - step;
                                     qOpacity[j]?.(lineOpacity(dist));
                                     qScale[j]?.(lineScale(dist));
+                                    if (item.scrollIdx === selectedIdx) {
+                                        lineEls[j].classList.add(styles.poemLineSelected);
+                                    } else {
+                                        lineEls[j].classList.remove(styles.poemLineSelected);
+                                    }
                                 }
                             }
                         },
