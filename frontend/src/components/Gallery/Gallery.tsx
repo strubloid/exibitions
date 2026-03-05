@@ -311,7 +311,6 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                         scrub: 0.5,
                         snap: {
                             snapTo: 1 / stepCount,
-                            directional: true,
                             duration: { min: 0.1, max: 0.3 },
                             delay: 0.05,
                             ease: "power2.inOut",

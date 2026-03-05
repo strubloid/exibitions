@@ -238,7 +238,7 @@
   color: #fff;
   text-align: center;
   // letter-spacing: 0.02em;
-  opacity: 0.08;               // GSAP drives this at runtime
+  opacity: 0;                  // GSAP drives this at runtime
   white-space: normal;
   overflow: visible;
   user-select: text;
