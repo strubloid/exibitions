@@ -106,7 +106,10 @@ function computePositions(items: Artwork[], VH: number): Positions {
         cursor = poemEnds[poemEnds.length - 1] + TRANS_PX;
     }
 
-    return { starts, poemStarts, poemEnds, total: cursor + SETTLE_PX, TRANS_PX, SETTLE_PX };
+    // Add enough space so the last line can be centered
+    // (viewport height / 2) - (line height / 2)
+    const lastLineCenterOffset = VH / 2 - LINE_H / 2;
+    return { starts, poemStarts, poemEnds, total: cursor + lastLineCenterOffset, TRANS_PX, SETTLE_PX };
 }
 
 function lerp(a: number, b: number, t: number): number {
