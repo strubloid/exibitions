@@ -12,36 +12,36 @@ interface GalleryProps {
 
 gsap.registerPlugin(ScrollTrigger);
 
-function transitionType(i: number): "vertical" | "horizontal" {
-    return Math.floor(i / 4) % 2 === 0 ? "vertical" : "horizontal";
+function getTransitionDirectionForArtwork(artworkIndex: number): "vertical" | "horizontal" {
+    return Math.floor(artworkIndex / 4) % 2 === 0 ? "vertical" : "horizontal";
 }
 
-const CLIP_FULL = "inset(0% 0% 0% 0%)";
-const CLIP_NONE_V = "inset(50% 0% 50% 0%)";
-const CLIP_NONE_H = "inset(0% 50% 0% 50%)";
+const ImageFullyVisible       = "inset(0% 0% 0% 0%)";
+const ImageCollapseVertical   = "inset(50% 0% 50% 0%)";
+const ImageCollapseHorizontal = "inset(0% 50% 0% 50%)";
 
-// Variable-scroll architecture
-const TRANSITION_VH = 80; // vh for enter/exit clip-path animation
-const SETTLE_VH = 7; // vh of stable image before poem starts
-const SCROLL_PER_LINE = 8; // vh per poem line (snap handles one-at-a-time)
-const LINE_H = 90; // px — must match .poemLine height in SCSS
-const TRAIL_LINES = 5; // extra scroll lines of hold after the last poem line
+// ── Scroll timing knobs ───────────────────────────────────────────────────────
+const ImageTransitionScrollVh = 80; // vh of scroll to animate in/out an image (clip-path)
+const SettleBeforePoemVh      = 7;  // vh of calm viewing before the poem lines start
+const ScrollVhPerPoemLine     = 8;  // vh of scroll consumed per poem line
+const PoemLineHeightPx        = 90; // px height per line — must match .poemLine in SCSS
+const ScrollAfterPoem         = 5;  // extra scroll lines to hold on the last poem line
 
-// ── Paragraph-aware poem parser ─────────────────────────────────────────────
+// ── Paragraph-aware poem parser ───────────────────────────────────────────────
 // Collapses 1+ consecutive blank lines into a single visual spacer.
 // Only real text lines are scroll steps; spacers are shown but not snapped to.
 interface PoemItem {
     type: "line" | "spacer";
-    text: string; // display text (or '\u00A0' for spacer)
+    text: string;      // display text (or '\u00A0' for spacer)
     scrollIdx: number; // for 'line': 0-based index among real lines; for 'spacer': -1
 }
 interface ParsedPoem {
     items: PoemItem[];
-    realCount: number; // total real (non-blank) lines
-    trackYForStep: number[]; // track Y offset for each scroll step (real line)
+    realCount: number;                  // total real (non-blank) lines
+    verticalOffsetByLineIndex: number[]; // track Y offset for each real line (used to scroll the track)
 }
 
-function parsePoemItems(description: string): ParsedPoem {
+function splitPoemIntoDisplayLines(description: string): ParsedPoem {
     const raw = description.split("\n");
     const items: PoemItem[] = [];
     let realCount = 0;
@@ -67,31 +67,31 @@ function parsePoemItems(description: string): ParsedPoem {
     }
 
     // Build trackY mapping: for scroll step N, what Y offset centers that line
-    const trackYForStep: number[] = [];
+    const verticalOffsetByLineIndex: number[] = [];
     let displayIdx = 0;
     for (const item of items) {
         if (item.type === "line") {
-            trackYForStep.push(displayIdx * LINE_H);
+            verticalOffsetByLineIndex.push(displayIdx * PoemLineHeightPx);
         }
         displayIdx++;
     }
 
-    return { items, realCount, trackYForStep };
+    return { items, realCount, verticalOffsetByLineIndex };
 }
 
 interface Positions {
-    starts: number[]; // scroll-px where artwork i is fully settled
-    poemStarts: number[]; // scroll-px where poem begins
-    poemEnds: number[]; // scroll-px where poem finishes
-    total: number; // total container height in px
-    TRANS_PX: number;
-    SETTLE_PX: number;
+    starts: number[];          // scroll-px where artwork i is fully settled
+    poemStarts: number[];      // scroll-px where poem begins
+    poemEnds: number[];        // scroll-px where poem finishes
+    total: number;             // total container height in px
+    imageTransitionPx: number;
+    settleBeforePoemPx: number;
 }
 
-function computePositions(items: Artwork[], VH: number): Positions {
-    const TRANS_PX = (TRANSITION_VH / 100) * VH;
-    const SETTLE_PX = (SETTLE_VH / 140) * VH;
-    const LINE_PX = (SCROLL_PER_LINE / 100) * VH;
+function calculateScrollPositions(items: Artwork[], viewportHeight: number): Positions {
+    const imageTransitionPx  = (ImageTransitionScrollVh / 100) * viewportHeight;
+    const settleBeforePoemPx = (SettleBeforePoemVh / 140) * viewportHeight;
+    const scrollPxPerPoemLine = (ScrollVhPerPoemLine / 100) * viewportHeight;
 
     const starts: number[] = [];
     const poemStarts: number[] = [];
@@ -100,37 +100,39 @@ function computePositions(items: Artwork[], VH: number): Positions {
     let cursor = 0;
     for (const artwork of items) {
         starts.push(cursor);
-        const { realCount } = parsePoemItems(artwork.description ?? "");
-        const nLines = Math.max(1, realCount);
-        poemStarts.push(cursor + SETTLE_PX);
-        poemEnds.push(cursor + SETTLE_PX + nLines * LINE_PX + TRAIL_LINES * LINE_PX);
-        cursor = poemEnds[poemEnds.length - 1] + TRANS_PX;
+        const { realCount } = splitPoemIntoDisplayLines(artwork.description ?? "");
+        const numberOfLines = Math.max(1, realCount);
+        poemStarts.push(cursor + settleBeforePoemPx);
+        poemEnds.push(cursor + settleBeforePoemPx + numberOfLines * scrollPxPerPoemLine + ScrollAfterPoem * scrollPxPerPoemLine);
+        cursor = poemEnds[poemEnds.length - 1] + imageTransitionPx;
     }
 
     // Add enough space so the last line can be centered
     // (viewport height / 2) - (line height / 2)
-    const lastLineCenterOffset = VH / 2 - LINE_H / 2;
-    return { starts, poemStarts, poemEnds, total: cursor + lastLineCenterOffset, TRANS_PX, SETTLE_PX };
+    const lastLineCenterOffset = viewportHeight / 2 - PoemLineHeightPx / 2;
+    return { starts, poemStarts, poemEnds, total: cursor + lastLineCenterOffset, imageTransitionPx, settleBeforePoemPx };
 }
 
-function lerp(a: number, b: number, t: number): number {
-    return a + (b - a) * t;
+function blendBetween(startValue: number, endValue: number, progress: number): number {
+    return startValue + (endValue - startValue) * progress;
 }
 
-function lineOpacity(distance: number): number {
-    const abs = Math.abs(distance);
-    if (abs >= 3) return 0;
-    if (abs < 1) return lerp(1.0, 0.5, abs);
-    if (abs < 2) return lerp(0.5, 0.25, abs - 1);
-    return lerp(0.25, 0.0, abs - 2);
+// 0 = active line, 1 = one line away, -2 = two lines above, etc.
+function opacityAtDistanceFromActive(distanceInLines: number): number {
+    const howFarAway = Math.abs(distanceInLines);
+    if (howFarAway >= 3) return 0;
+    if (howFarAway < 1)  return blendBetween(1.0,  0.5,  howFarAway);
+    if (howFarAway < 2)  return blendBetween(0.5,  0.25, howFarAway - 1);
+    return blendBetween(0.25, 0.0, howFarAway - 2);
 }
 
-// Only the centered line is 1.5x, others are 1 or less
-function lineScale(distance: number): number {
-    const abs = Math.abs(distance);
-    if (abs < 0.01) return 1.3; // exactly centered
-    if (abs < 1) return lerp(0.8, 0.75, abs); // next-nearest lines
-    if (abs < 2) return lerp(0.65, 0.4, abs - 1);
+// Active line is scaled up; lines further away shrink proportionally.
+// 0 = active (1.3×), 1 = neighbour (0.8×), 2+ = background (0.5×)
+function scaleAtDistanceFromActive(distanceInLines: number): number {
+    const howFarAway = Math.abs(distanceInLines);
+    if (howFarAway < 0.01) return 1.3;
+    if (howFarAway < 1)    return blendBetween(0.8,  0.75, howFarAway);
+    if (howFarAway < 2)    return blendBetween(0.65, 0.4,  howFarAway - 1);
     return 0.5;
 }
 
@@ -160,8 +162,8 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
     useEffect(() => {
         if (!items.length || !containerRef.current) return;
 
-        const VH = window.innerHeight;
-        const pos = computePositions(items, VH);
+        const viewportHeight = window.innerHeight;
+        const pos = calculateScrollPositions(items, viewportHeight);
         artworkStartsRef.current = pos.starts;
 
         containerRef.current.style.height = `${pos.total}px`;
@@ -177,9 +179,9 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                 const info = infoRefs.current[i];
                 if (!layer || !inner || !info) return;
 
-                const { starts, poemStarts, poemEnds, TRANS_PX } = pos;
-                const holdStart = starts[i];
-                const holdEnd = poemEnds[i];
+                const { starts, poemStarts, poemEnds, imageTransitionPx } = pos;
+                const imageVisibleStart = starts[i];
+                const imageVisibleEnd   = poemEnds[i];
 
                 if (prefersReduced) {
                     var zIndexValue = i === 0 ? items.length : i - items.length;
@@ -192,7 +194,7 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                         gsap.timeline({
                             scrollTrigger: {
                                 trigger: containerRef.current,
-                                start: `${starts[i] - TRANS_PX}px top`,
+                                start: `${starts[i] - imageTransitionPx}px top`,
                                 end: `${starts[i]}px top`,
                                 scrub: 1,
                                 onEnter: () => gsap.set(layer, { zIndex: 20 }),
@@ -217,16 +219,15 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                     }
                 } else {
                     // ── FULL MOTION: iris clip-path transitions ────────────────────────
-                    const tType = transitionType(i);
-                    const noneIn = tType === "vertical" ? CLIP_NONE_V : CLIP_NONE_H;
-                    const noneOut = tType === "vertical" ? CLIP_NONE_V : CLIP_NONE_H;
+                    const tType = getTransitionDirectionForArtwork(i);
+                    const collapseClip = tType === "vertical" ? ImageCollapseVertical : ImageCollapseHorizontal;
 
                     if (i === 0) {
-                        gsap.set(layer, { clipPath: CLIP_FULL, zIndex: 10 });
+                        gsap.set(layer, { clipPath: ImageFullyVisible, zIndex: 10 });
                         gsap.set(inner, { scale: 1 });
                         gsap.set(info, { opacity: 1, y: 0 });
                     } else {
-                        gsap.set(layer, { clipPath: noneIn, zIndex: i });
+                        gsap.set(layer, { clipPath: collapseClip, zIndex: i });
                         gsap.set(info, { opacity: 0, y: 24 });
                     }
 
@@ -235,14 +236,14 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                         gsap.timeline({
                             scrollTrigger: {
                                 trigger: containerRef.current,
-                                start: `${starts[i] - TRANS_PX}px top`,
+                                start: `${starts[i] - imageTransitionPx}px top`,
                                 end: `${starts[i]}px top`,
                                 scrub: 1,
                                 onEnter: () => gsap.set(layer, { zIndex: 20 }),
                                 onLeaveBack: () => gsap.set(layer, { zIndex: i }),
                             },
                         })
-                            .fromTo(layer, { clipPath: noneIn }, { clipPath: CLIP_FULL, ease: "none" })
+                            .fromTo(layer, { clipPath: collapseClip }, { clipPath: ImageFullyVisible, ease: "none" })
                             .fromTo(inner, { scale: 1.05 }, { scale: 1, ease: "none" }, "<")
                             .fromTo(info, { opacity: 0, y: 24 }, { opacity: 1, y: 0, ease: "none" }, ">-0.3");
                     }
@@ -257,18 +258,18 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                                 scrub: 1,
                             },
                         })
-                            .fromTo(layer, { clipPath: CLIP_FULL }, { clipPath: noneOut, ease: "none" })
+                            .fromTo(layer, { clipPath: ImageFullyVisible }, { clipPath: collapseClip, ease: "none" })
                             .fromTo(inner, { scale: 1 }, { scale: 0.97, ease: "none" }, "<")
                             .fromTo(info, { opacity: 1, y: 0 }, { opacity: 0, y: -16, ease: "none" }, "<");
                     }
 
                     // ── PARALLAX during hold + poem ────────────────────────────────────
-                    if (holdEnd > holdStart) {
+                    if (imageVisibleEnd > imageVisibleStart) {
                         gsap.timeline({
                             scrollTrigger: {
                                 trigger: containerRef.current,
-                                start: `${holdStart}px top`,
-                                end: `${holdEnd}px top`,
+                                start: `${imageVisibleStart}px top`,
+                                end: `${imageVisibleEnd}px top`,
                                 scrub: 0.5,
                             },
                         }).fromTo(inner, { yPercent: 1.5 }, { yPercent: -1.5, ease: "none" });
@@ -289,58 +290,59 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                 }
 
                 // ── POEM VIEWER ───────────────────────────────────────────────────────
-                const poem = parsePoemItems(artwork.description ?? "");
+                const poem = splitPoemIntoDisplayLines(artwork.description ?? "");
                 const track = poemTrackRefs.current[i];
                 const lineEls = (lineRefs.current[i] ?? []).slice(0, poem.items.length);
 
                 if (poem.realCount >= 1 && track && lineEls.length) {
                     gsap.set(track, { xPercent: -50, y: 0 });
                     lineEls.forEach((el) => {
-                        if (el) gsap.set(el, { opacity: 0, scale: lineScale(0) });
+                        if (el) gsap.set(el, { opacity: 0, scale: scaleAtDistanceFromActive(0) });
                     });
 
                     // quickSetter avoids per-frame GSAP overhead for high-frequency updates
-                    const setY = gsap.quickSetter(track, "y", "px") as (v: number) => void;
-                    const qOpacity = lineEls.map((el) => (el ? (gsap.quickSetter(el, "opacity") as (v: number) => void) : null));
-                    const qScale = lineEls.map((el) => (el ? (gsap.quickSetter(el, "scale") as (v: number) => void) : null));
+                    const setTrackY = gsap.quickSetter(track, "y", "px") as (v: number) => void;
+                    const setLineOpacity = lineEls.map((el) => (el ? (gsap.quickSetter(el, "opacity") as (v: number) => void) : null));
+                    const setLineScale   = lineEls.map((el) => (el ? (gsap.quickSetter(el, "scale") as (v: number) => void) : null));
 
-                    const stepCount = Math.max(1, poem.realCount - 1);
+                    const totalSteps = Math.max(1, poem.realCount - 1);
                     ScrollTrigger.create({
                         trigger: containerRef.current,
                         start: `${poemStarts[i]}px top`,
                         end: `${poemEnds[i]}px top`,
                         scrub: 0.5,
                         snap: {
-                            snapTo: 1 / stepCount,
+                            snapTo: 1 / totalSteps,
                             duration: { min: 0.1, max: 0.3 },
                             delay: 0.05,
                             ease: "power2.inOut",
                         },
                         onUpdate: (self) => {
-                            const step = self.progress * stepCount;
-                            // Interpolate track Y between real-line positions
-                            const lo = Math.floor(step);
-                            const hi = Math.min(lo + 1, poem.trackYForStep.length - 1);
-                            const frac = step - lo;
-                            const trackY = lerp(poem.trackYForStep[lo] ?? 0, poem.trackYForStep[hi] ?? 0, frac);
-                            setY(-trackY);
+                            const currentStep = self.progress * totalSteps;
 
-                            const selectedIdx = Math.round(step);
+                            // Interpolate track Y between real-line positions
+                            const stepLow  = Math.floor(currentStep);
+                            const stepHigh = Math.min(stepLow + 1, poem.verticalOffsetByLineIndex.length - 1);
+                            const fraction = currentStep - stepLow;
+                            const trackY = blendBetween(poem.verticalOffsetByLineIndex[stepLow] ?? 0, poem.verticalOffsetByLineIndex[stepHigh] ?? 0, fraction);
+                            setTrackY(-trackY);
+
+                            const activeLine = Math.round(currentStep);
 
                             for (let j = 0; j < lineEls.length; j++) {
                                 if (!lineEls[j]) continue;
                                 const item = poem.items[j];
 
                                 if (item.type === "spacer") {
-                                    qOpacity[j]?.(0);
-                                    qScale[j]?.(1);
+                                    setLineOpacity[j]?.(0);
+                                    setLineScale[j]?.(1);
                                     lineEls[j].classList.remove(styles.poemLineSelected);
                                 } else {
-                                    // Distance is between current scroll step and this line's real index
-                                    const dist = item.scrollIdx - step;
-                                    qOpacity[j]?.(lineOpacity(dist));
-                                    qScale[j]?.(lineScale(dist));
-                                    if (item.scrollIdx === selectedIdx) {
+                                    // Distance from this line to the current scroll position
+                                    const distanceFromActive = item.scrollIdx - currentStep;
+                                    setLineOpacity[j]?.(opacityAtDistanceFromActive(distanceFromActive));
+                                    setLineScale[j]?.(scaleAtDistanceFromActive(distanceFromActive));
+                                    if (item.scrollIdx === activeLine) {
                                         lineEls[j].classList.add(styles.poemLineSelected);
                                     } else {
                                         lineEls[j].classList.remove(styles.poemLineSelected);
@@ -411,7 +413,7 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
     }, [items.length]);
 
     // Compute container height for initial render (matches what useEffect sets)
-    const initHeight = items.length && typeof window !== "undefined" ? computePositions(items, window.innerHeight).total : 0;
+    const initHeight = items.length && typeof window !== "undefined" ? calculateScrollPositions(items, window.innerHeight).total : 0;
 
     const isTouch = typeof window !== "undefined" && "ontouchstart" in window;
 
@@ -465,7 +467,7 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
 
                         {artwork.description &&
                             (() => {
-                                const { items: poemItems } = parsePoemItems(artwork.description);
+                                const { items: poemItems } = splitPoemIntoDisplayLines(artwork.description);
                                 return (
                                     <div className={styles.poemWindow}>
                                         <div

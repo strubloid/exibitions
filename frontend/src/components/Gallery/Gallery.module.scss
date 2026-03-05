@@ -220,6 +220,8 @@
   position: absolute;
   top: calc(50% - 45px);   // LINE_H/2 = 45px, so line-0 center aligns to viewport center
   left: 50%;
+  width: 90%;
+  max-width: 90%;              // 78% of viewport width with 11% margin on each side
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -252,7 +254,7 @@
   font-size: clamp(1.2rem, 3vw, 3rem);
   letter-spacing: 0.04em;
   // min-width: 70vw;
-  max-width: 100vw;
+  max-width: 70vw;
   margin: 0 auto;
   padding: 0.3em;
   background: none;
