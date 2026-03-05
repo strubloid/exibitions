@@ -22,8 +22,8 @@ const CLIP_NONE_H = "inset(0% 50% 0% 50%)";
 
 // Variable-scroll architecture
 const TRANSITION_VH = 80; // vh for enter/exit clip-path animation
-const SETTLE_VH = 5; // vh of stable image before poem starts
-const SCROLL_PER_LINE = 10; // vh per poem line (snap handles one-at-a-time)
+const SETTLE_VH = 15; // vh of stable image before poem starts
+const SCROLL_PER_LINE = 8; // vh per poem line (snap handles one-at-a-time)
 const LINE_H = 70; // px — must match .poemLine height in SCSS
 
 // ── Paragraph-aware poem parser ─────────────────────────────────────────────
@@ -89,7 +89,7 @@ interface Positions {
 
 function computePositions(items: Artwork[], VH: number): Positions {
     const TRANS_PX = (TRANSITION_VH / 100) * VH;
-    const SETTLE_PX = (SETTLE_VH / 80) * VH;
+    const SETTLE_PX = (SETTLE_VH / 140) * VH;
     const LINE_PX = (SCROLL_PER_LINE / 100) * VH;
 
     const starts: number[] = [];
