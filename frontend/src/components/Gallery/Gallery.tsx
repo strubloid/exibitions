@@ -101,7 +101,7 @@ interface Positions {
 
 function calculateScrollPositions(items: Artwork[], viewportHeight: number): Positions {
     const imageTransitionPx = (ImageTransitionScrollVh / 100) * viewportHeight;
-    const settleBeforePoemPx = (SettleBeforePoemVh / 140) * viewportHeight;
+    const settleBeforePoemPx = (SettleBeforePoemVh / 100) * viewportHeight;
     const scrollPxPerPoemLine = (ScrollVhPerPoemLine / 100) * viewportHeight;
 
     const starts: number[] = [];

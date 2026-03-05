@@ -121,6 +121,12 @@
   color: #fff;
   line-height: 1.0;
   max-width: 16ch;
+
+  @media (max-width: 768px) {
+    font-size: clamp(1.8rem, 5vw, 3.5rem);
+    max-width: 14ch;
+    margin: 0 0 0.6rem;
+  }
 }
 
 .description {
@@ -130,6 +136,11 @@
   max-width: 44ch;
   line-height: 1.65;
   font-weight: 300;
+
+  @media (max-width: 768px) {
+    max-width: 32ch;
+    font-size: clamp(0.7rem, 1vw, 0.9rem);
+  }
 
   @media (max-width: 480px) {
     display: none;
@@ -143,6 +154,10 @@
   align-items: flex-start;
   gap: 0.7rem;
   flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    gap: 0.5rem;
+  }
 }
 
 .sectionBtn {
@@ -161,6 +176,12 @@
   &:hover {
     color: rgba(255, 255, 255, 0.85);
     border-color: rgba(255, 255, 255, 0.45);
+  }
+
+  @media (max-width: 768px) {
+    font-size: 0.58rem;
+    padding: 0.5rem 0.9rem;
+    letter-spacing: 0.2em;
   }
 
   @media (max-width: 480px) {
@@ -186,6 +207,12 @@
     letter-spacing: 0.35em;
   }
 
+  @media (max-width: 768px) {
+    font-size: 0.62rem;
+    padding: 0.6rem 1rem;
+    letter-spacing: 0.2em;
+  }
+
   @media (max-width: 480px) {
     display: none;
   }
@@ -195,18 +222,18 @@
 .scrollTopBtn {
   position: fixed;
   bottom: 2.5rem;
-  right: 3rem;
+  right: 2rem;
   z-index: 50;
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: rgba(255, 255, 255, 0.28);
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 2.5rem;
+  height: 2.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-family: inherit;
   transition: color 0.2s, border-color 0.2s;
 
@@ -215,9 +242,20 @@
     border-color: rgba(255, 255, 255, 0.42);
   }
 
+  @media (max-width: 768px) {
+    bottom: 1.75rem;
+    right: 1.5rem;
+    width: 2.2rem;
+    height: 2.2rem;
+    font-size: 0.85rem;
+  }
+
   @media (max-width: 600px) {
     bottom: 1.5rem;
-    right: 1.75rem;
+    right: 1.5rem;
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.8rem;
   }
 }
 
