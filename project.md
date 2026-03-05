@@ -256,6 +256,18 @@ A production-ready, containerized, full-stack art exhibition platform for immers
   - Track Y animation continues past last line to show trailing blank space
   - Text properly centered with balanced white space before and after
 
+### Phase 18.5 — Admin Panel: Exhibitions CRUD + Persistent Storage ✅
+- **Admin exhibition management**: Full CRUD UI in AdminPanel for exhibitions (create, edit, delete, cover image upload)
+- **Artwork assignment UI**: Per-exhibition panel to check/uncheck artworks and set sort order
+- **UI feedback system**: Success/error toast messages for all operations (image upload, save, delete) with 3-second auto-dismiss
+- **Database seeders**: Created `ExhibitionSeeder` with sample exhibitions, integrated into `DatabaseSeeder`
+- **Export command**: New Artisan command `php artisan artworks:export-exibitions` to export current exhibitions to seeder format
+- **Docker persistent storage**: Added `storage-data` volume in `docker-compose.yml` mounted at `/app/storage`
+- **Nginx static file serving**: Updated `/storage` location to serve `alias /app/storage/app/public` with 30-day cache headers instead of proxying to backend
+- **Fly.io volume setup**: Added `[mounts]` section in `fly.toml` with 10GB persistent volume at `/app/storage`
+- **High-availability deployment**: Scaled to 2 machines on fly.io with automatic volume replication (both machines now have 553 MB of synced image data)
+- **Image cache-busting**: Added query parameters to image URLs (`${artwork.image}?t=${artwork.updated_at}&r=${Math.random()}`) to ensure fresh images load after upload
+
 ---
 
 ## NEXT PHASE
