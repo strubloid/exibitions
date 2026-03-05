@@ -16,28 +16,29 @@ function getTransitionDirectionForArtwork(artworkIndex: number): "vertical" | "h
     return Math.floor(artworkIndex / 4) % 2 === 0 ? "vertical" : "horizontal";
 }
 
-const ImageFullyVisible       = "inset(0% 0% 0% 0%)";
-const ImageCollapseVertical   = "inset(50% 0% 50% 0%)";
+const ImageFullyVisible = "inset(0% 0% 0% 0%)";
+const ImageCollapseVertical = "inset(50% 0% 50% 0%)";
 const ImageCollapseHorizontal = "inset(0% 50% 0% 50%)";
 
 // ── Scroll timing knobs ───────────────────────────────────────────────────────
 const ImageTransitionScrollVh = 80; // vh of scroll to animate in/out an image (clip-path)
-const SettleBeforePoemVh      = 7;  // vh of calm viewing before the poem lines start
-const ScrollVhPerPoemLine     = 8;  // vh of scroll consumed per poem line
-const PoemLineHeightPx        = 90; // px height per line — must match .poemLine in SCSS
-const ScrollAfterPoem         = 5;  // extra scroll lines to hold on the last poem line
+const SettleBeforePoemVh = 7; // vh of calm viewing before the poem lines start
+const ScrollVhPerPoemLine = 8; // vh of scroll consumed per poem line
+const PoemLineHeightPx = 90; // px height per line — must match .poemLine in SCSS
+const BlankLinesBeforePoem = 0; // blank spacers before poem text starts (forces scroll delay before content)
+const BlankLinesAfterPoem = 2; // blank spacers after poem text ends (allows reading last line before transition)
 
 // ── Paragraph-aware poem parser ───────────────────────────────────────────────
 // Collapses 1+ consecutive blank lines into a single visual spacer.
 // Only real text lines are scroll steps; spacers are shown but not snapped to.
 interface PoemItem {
     type: "line" | "spacer";
-    text: string;      // display text (or '\u00A0' for spacer)
+    text: string; // display text (or '\u00A0' for spacer)
     scrollIdx: number; // for 'line': 0-based index among real lines; for 'spacer': -1
 }
 interface ParsedPoem {
     items: PoemItem[];
-    realCount: number;                  // total real (non-blank) lines
+    realCount: number; // total real (non-blank) lines
     verticalOffsetByLineIndex: number[]; // track Y offset for each real line (used to scroll the track)
 }
 
@@ -47,10 +48,15 @@ function splitPoemIntoDisplayLines(description: string): ParsedPoem {
     let realCount = 0;
     let inBlank = false;
 
+    // Add blank spacer lines at the start for scrollable padding before poem
+    for (let i = 0; i < BlankLinesBeforePoem; i++) {
+        items.push({ type: "spacer", text: "\u00A0", scrollIdx: -1 });
+    }
+
     for (const line of raw) {
         if (line.trim() === "") {
             // collapse consecutive blanks into one spacer
-            if (!inBlank && items.length > 0) {
+            if (!inBlank && items.length > BlankLinesBeforePoem) {
                 items.push({ type: "spacer", text: "\u00A0", scrollIdx: -1 });
             }
             inBlank = true;
@@ -64,6 +70,11 @@ function splitPoemIntoDisplayLines(description: string): ParsedPoem {
     // Remove trailing spacer if any
     if (items.length > 0 && items[items.length - 1].type === "spacer") {
         items.pop();
+    }
+
+    // Add blank spacer lines at the end for scrollable padding after poem
+    for (let i = 0; i < BlankLinesAfterPoem; i++) {
+        items.push({ type: "spacer", text: "\u00A0", scrollIdx: -1 });
     }
 
     // Build trackY mapping: for scroll step N, what Y offset centers that line
@@ -80,16 +91,16 @@ function splitPoemIntoDisplayLines(description: string): ParsedPoem {
 }
 
 interface Positions {
-    starts: number[];          // scroll-px where artwork i is fully settled
-    poemStarts: number[];      // scroll-px where poem begins
-    poemEnds: number[];        // scroll-px where poem finishes
-    total: number;             // total container height in px
+    starts: number[]; // scroll-px where artwork i is fully settled
+    poemStarts: number[]; // scroll-px where poem begins
+    poemEnds: number[]; // scroll-px where poem finishes
+    total: number; // total container height in px
     imageTransitionPx: number;
     settleBeforePoemPx: number;
 }
 
 function calculateScrollPositions(items: Artwork[], viewportHeight: number): Positions {
-    const imageTransitionPx  = (ImageTransitionScrollVh / 100) * viewportHeight;
+    const imageTransitionPx = (ImageTransitionScrollVh / 100) * viewportHeight;
     const settleBeforePoemPx = (SettleBeforePoemVh / 140) * viewportHeight;
     const scrollPxPerPoemLine = (ScrollVhPerPoemLine / 100) * viewportHeight;
 
@@ -100,10 +111,12 @@ function calculateScrollPositions(items: Artwork[], viewportHeight: number): Pos
     let cursor = 0;
     for (const artwork of items) {
         starts.push(cursor);
-        const { realCount } = splitPoemIntoDisplayLines(artwork.description ?? "");
-        const numberOfLines = Math.max(1, realCount);
+        const { items: poemItems } = splitPoemIntoDisplayLines(artwork.description ?? "");
+        // Poem trigger starts after initial settle, then scrolls through all items (blanks + text + blanks)
         poemStarts.push(cursor + settleBeforePoemPx);
-        poemEnds.push(cursor + settleBeforePoemPx + numberOfLines * scrollPxPerPoemLine + ScrollAfterPoem * scrollPxPerPoemLine);
+        // Total scrollable range: all items in poem track (before + text + after)
+        const totalScrollableLines = poemItems.length;
+        poemEnds.push(cursor + settleBeforePoemPx + totalScrollableLines * scrollPxPerPoemLine);
         cursor = poemEnds[poemEnds.length - 1] + imageTransitionPx;
     }
 
@@ -121,8 +134,8 @@ function blendBetween(startValue: number, endValue: number, progress: number): n
 function opacityAtDistanceFromActive(distanceInLines: number): number {
     const howFarAway = Math.abs(distanceInLines);
     if (howFarAway >= 3) return 0;
-    if (howFarAway < 1)  return blendBetween(1.0,  0.5,  howFarAway);
-    if (howFarAway < 2)  return blendBetween(0.5,  0.25, howFarAway - 1);
+    if (howFarAway < 1) return blendBetween(1.0, 0.5, howFarAway);
+    if (howFarAway < 2) return blendBetween(0.5, 0.25, howFarAway - 1);
     return blendBetween(0.25, 0.0, howFarAway - 2);
 }
 
@@ -131,8 +144,8 @@ function opacityAtDistanceFromActive(distanceInLines: number): number {
 function scaleAtDistanceFromActive(distanceInLines: number): number {
     const howFarAway = Math.abs(distanceInLines);
     if (howFarAway < 0.01) return 1.3;
-    if (howFarAway < 1)    return blendBetween(0.8,  0.75, howFarAway);
-    if (howFarAway < 2)    return blendBetween(0.65, 0.4,  howFarAway - 1);
+    if (howFarAway < 1) return blendBetween(0.8, 0.75, howFarAway);
+    if (howFarAway < 2) return blendBetween(0.65, 0.4, howFarAway - 1);
     return 0.5;
 }
 
@@ -181,7 +194,7 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
 
                 const { starts, poemStarts, poemEnds, imageTransitionPx } = pos;
                 const imageVisibleStart = starts[i];
-                const imageVisibleEnd   = poemEnds[i];
+                const imageVisibleEnd = poemEnds[i];
 
                 if (prefersReduced) {
                     var zIndexValue = i === 0 ? items.length : i - items.length;
@@ -303,28 +316,49 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                     // quickSetter avoids per-frame GSAP overhead for high-frequency updates
                     const setTrackY = gsap.quickSetter(track, "y", "px") as (v: number) => void;
                     const setLineOpacity = lineEls.map((el) => (el ? (gsap.quickSetter(el, "opacity") as (v: number) => void) : null));
-                    const setLineScale   = lineEls.map((el) => (el ? (gsap.quickSetter(el, "scale") as (v: number) => void) : null));
+                    const setLineScale = lineEls.map((el) => (el ? (gsap.quickSetter(el, "scale") as (v: number) => void) : null));
 
-                    const totalSteps = Math.max(1, poem.realCount - 1);
+                    // Total steps accounts for ALL items (before + text + after spacers)
+                    // This ensures scroll range extends to show all spacer elements
+                    const totalSteps = Math.max(1, poem.items.length - 1);
+                    // But we only snap to real lines, not spacers
+                    const realLineSteps = Math.max(1, poem.realCount - 1);
+
                     ScrollTrigger.create({
                         trigger: containerRef.current,
                         start: `${poemStarts[i]}px top`,
                         end: `${poemEnds[i]}px top`,
                         scrub: 0.5,
                         snap: {
-                            snapTo: 1 / totalSteps,
+                            snapTo: (progress) => {
+                                // Snap only to real line positions, not spacers
+                                const snappedStep = Math.round(progress * realLineSteps) / realLineSteps;
+                                return snappedStep;
+                            },
                             duration: { min: 0.1, max: 0.3 },
                             delay: 0.05,
                             ease: "power2.inOut",
                         },
                         onUpdate: (self) => {
+                            // Map progress through ALL items to show spacers
                             const currentStep = self.progress * totalSteps;
 
-                            // Interpolate track Y between real-line positions
-                            const stepLow  = Math.floor(currentStep);
-                            const stepHigh = Math.min(stepLow + 1, poem.verticalOffsetByLineIndex.length - 1);
-                            const fraction = currentStep - stepLow;
-                            const trackY = blendBetween(poem.verticalOffsetByLineIndex[stepLow] ?? 0, poem.verticalOffsetByLineIndex[stepHigh] ?? 0, fraction);
+                            // Calculate track Y position to show current scroll location
+                            // For real lines: interpolate between line positions
+                            // For spacers after last line: continue translating
+                            let trackY = 0;
+                            if (currentStep < poem.realCount - 1) {
+                                const stepLow = Math.floor(currentStep);
+                                const stepHigh = Math.min(stepLow + 1, poem.verticalOffsetByLineIndex.length - 1);
+                                const fraction = currentStep - stepLow;
+                                trackY = blendBetween(poem.verticalOffsetByLineIndex[stepLow] ?? 0, poem.verticalOffsetByLineIndex[stepHigh] ?? 0, fraction);
+                            } else {
+                                // Past the last real line: continue scrolling to show trailing spacers
+                                const lastLineOffset = poem.verticalOffsetByLineIndex[poem.verticalOffsetByLineIndex.length - 1] ?? 0;
+                                const progressBeyondLastLine = currentStep - (poem.realCount - 1);
+                                const extraScroll = progressBeyondLastLine * PoemLineHeightPx;
+                                trackY = lastLineOffset + extraScroll;
+                            }
                             setTrackY(-trackY);
 
                             const activeLine = Math.round(currentStep);
@@ -476,19 +510,22 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                                             }}
                                             className={styles.poemTrack}
                                         >
+                                            {/* Poem text lines (including trailing spacers for scrollable padding) */}
                                             {poemItems.map((item, j) => (
-                                                <div
-                                                    key={j}
-                                                    ref={(el) => {
-                                                        if (el) {
-                                                            lineRefs.current[i] = lineRefs.current[i] ?? [];
-                                                            lineRefs.current[i][j] = el;
-                                                        }
-                                                    }}
-                                                    className={item.type === "spacer" ? styles.poemSpacer : styles.poemLine}
-                                                >
-                                                    {item.text}
-                                                </div>
+                                                <>
+                                                    <div
+                                                        key={j}
+                                                        ref={(el) => {
+                                                            if (el) {
+                                                                lineRefs.current[i] = lineRefs.current[i] ?? [];
+                                                                lineRefs.current[i][j] = el;
+                                                            }
+                                                        }}
+                                                        className={item.type === "spacer" ? styles.poemSpacer : styles.poemLine}
+                                                    >
+                                                        {item.text}
+                                                    </div>
+                                                </>
                                             ))}
                                         </div>
                                     </div>
