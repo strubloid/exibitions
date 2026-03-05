@@ -12,10 +12,10 @@ import styles from './Exhibitions.module.scss'
 gsap.registerPlugin(ScrollTrigger)
 
 // ── Scroll timing knobs ───────────────────────────────────────────────────────
-const SettleVhBeforeCards = 20   // vh of calm viewing before first card appears
-const ScrollVhPerCardSlide = 30  // vh consumed by slide-in animation per card
-const ScrollVhPerCardLight = 20  // vh consumed by brightness animation per card
-const ScrollVhPerCard = ScrollVhPerCardSlide + ScrollVhPerCardLight
+const SettleVhBeforeCards = 20     // vh of calm viewing before first card appears
+const ScrollVhPerCardSlide = 30    // vh for card to slide in from off-screen
+const ScrollVhPerCardShimmer = 30  // vh for golden light sweep + brighten
+const ScrollVhPerCard = ScrollVhPerCardSlide + ScrollVhPerCardShimmer
 
 function calculateCardScrollPositions(cardCount: number, viewportHeight: number) {
   const settlePx = (SettleVhBeforeCards / 100) * viewportHeight
@@ -24,18 +24,18 @@ function calculateCardScrollPositions(cardCount: number, viewportHeight: number)
 
   const slideStarts: number[] = []
   const slideEnds: number[] = []
-  const lightEnds: number[] = []
+  const shimmerEnds: number[] = []
 
   for (let cardIndex = 0; cardIndex < cardCount; cardIndex++) {
     const cardStart = settlePx + cardIndex * pxPerCard
     slideStarts.push(cardStart)
     slideEnds.push(cardStart + pxPerSlide)
-    lightEnds.push(cardStart + pxPerCard)
+    shimmerEnds.push(cardStart + pxPerCard)
   }
 
   // Total container height: viewport (sticky view) + settle + all cards + one extra vh
   const totalPx = viewportHeight + settlePx + cardCount * pxPerCard + viewportHeight * 0.2
-  return { slideStarts, slideEnds, lightEnds, totalPx }
+  return { slideStarts, slideEnds, shimmerEnds, totalPx }
 }
 
 const shortDesc = (text: string) => {
@@ -137,7 +137,9 @@ export default function Exhibitions() {
           bgContainer.style.height = `${pos.totalPx}px`
 
           bgCards.forEach((card, cardIndex) => {
-            gsap.set(card, { x: cardIndex % 2 === 0 ? offscreenLeft : offscreenRight, filter: 'brightness(0.2)' })
+            gsap.set(card, { x: cardIndex % 2 === 0 ? offscreenLeft : offscreenRight, filter: 'brightness(0.15)' })
+            const shimmer = card.querySelector('[data-shimmer]') as HTMLElement | null
+            if (shimmer) gsap.set(shimmer, { xPercent: -100 })
           })
 
           bgCards.forEach((card, cardIndex) => {
@@ -153,17 +155,30 @@ export default function Exhibitions() {
               },
             })
 
-            // Phase 2: light up after card reaches position
+            // Phase 2: brighten to normal + golden beam sweeps left→right across card
             gsap.to(card, {
               filter: 'brightness(1)',
               ease: 'none',
               scrollTrigger: {
                 trigger: bgContainer,
                 start: `${pos.slideEnds[cardIndex]}px top`,
-                end: `${pos.lightEnds[cardIndex]}px top`,
+                end: `${pos.shimmerEnds[cardIndex]}px top`,
                 scrub: 1,
               },
             })
+            const shimmer = card.querySelector('[data-shimmer]') as HTMLElement | null
+            if (shimmer) {
+              gsap.to(shimmer, {
+                xPercent: 100,
+                ease: 'none',
+                scrollTrigger: {
+                  trigger: bgContainer,
+                  start: `${pos.slideEnds[cardIndex]}px top`,
+                  end: `${pos.shimmerEnds[cardIndex]}px top`,
+                  scrub: 1,
+                },
+              })
+            }
           })
         }
 
@@ -175,7 +190,9 @@ export default function Exhibitions() {
           clippingContainer.style.height = `${pos.totalPx}px`
 
           clippingCards.forEach((card, cardIndex) => {
-            gsap.set(card, { x: cardIndex % 2 === 0 ? offscreenLeft : offscreenRight, filter: 'brightness(0.2)' })
+            gsap.set(card, { x: cardIndex % 2 === 0 ? offscreenLeft : offscreenRight, filter: 'brightness(0.15)' })
+            const shimmer = card.querySelector('[data-shimmer]') as HTMLElement | null
+            if (shimmer) gsap.set(shimmer, { xPercent: -100 })
           })
 
           clippingCards.forEach((card, cardIndex) => {
@@ -191,17 +208,30 @@ export default function Exhibitions() {
               },
             })
 
-            // Phase 2: light up
+            // Phase 2: brighten to normal + golden beam sweeps left→right across card
             gsap.to(card, {
               filter: 'brightness(1)',
               ease: 'none',
               scrollTrigger: {
                 trigger: clippingContainer,
                 start: `${pos.slideEnds[cardIndex]}px top`,
-                end: `${pos.lightEnds[cardIndex]}px top`,
+                end: `${pos.shimmerEnds[cardIndex]}px top`,
                 scrub: 1,
               },
             })
+            const shimmer = card.querySelector('[data-shimmer]') as HTMLElement | null
+            if (shimmer) {
+              gsap.to(shimmer, {
+                xPercent: 100,
+                ease: 'none',
+                scrollTrigger: {
+                  trigger: clippingContainer,
+                  start: `${pos.slideEnds[cardIndex]}px top`,
+                  end: `${pos.shimmerEnds[cardIndex]}px top`,
+                  scrub: 1,
+                },
+              })
+            }
           })
         }
       })
@@ -302,6 +332,7 @@ export default function Exhibitions() {
                               if (el) bgCardRefs.current[i][idx] = el
                             }}
                           >
+                            <div data-shimmer="" className={styles.cardShimmer} />
                             <p className={styles.backgroundText}>{line}</p>
                           </div>
                         ))}
@@ -332,6 +363,7 @@ export default function Exhibitions() {
                             onClick={() => clippingEntry.screenshot_image && setSelectedClipping({ exhibitionId: exhibition.id, clippingIndex: entryIndex })}
                             style={{ cursor: clippingEntry.screenshot_image ? 'pointer' : 'default' }}
                           >
+                            <div data-shimmer="" className={styles.cardShimmer} />
                             {clippingEntry.screenshot_image && (
                               <div className={styles.clippingImageContainer}>
                                 <img

@@ -232,6 +232,8 @@
 }
 
 .backgroundMasonryItem {
+  position: relative;
+  overflow: hidden;
   text-align: center;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -261,6 +263,28 @@
   color: rgba(255, 255, 255, 0.8);
   line-height: 1.85;
   font-weight: 300;
+  position: relative;
+  z-index: 1;
+}
+
+// ─── Golden light sweep beam (GSAP animates xPercent -100 → 100) ──────────────
+.cardShimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    transparent 25%,
+    rgba(255, 190, 30, 0.12) 35%,
+    rgba(255, 220, 80, 0.65) 46%,
+    rgba(255, 250, 180, 0.95) 50%,
+    rgba(255, 220, 80, 0.65) 54%,
+    rgba(255, 190, 30, 0.12) 65%,
+    transparent 75%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 2;
 }
 
 // ─── Clippings sticky wrapper ──────────────────────────────────────────────────
@@ -368,6 +392,7 @@
 
 .clippingCard {
   position: relative;
+  overflow: hidden;
   text-align: center;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -415,7 +440,7 @@
 
 .clippingCardDetails {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   padding: 1.25rem 1rem;
   display: flex;
   flex-direction: column;
