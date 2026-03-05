@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import gsap from 'gsap'
@@ -10,6 +10,33 @@ import Gallery from '../Gallery/Gallery'
 import styles from './Exhibitions.module.scss'
 
 gsap.registerPlugin(ScrollTrigger)
+
+// ── Scroll timing knobs ───────────────────────────────────────────────────────
+const SettleVhBeforeCards = 20   // vh of calm viewing before first card appears
+const ScrollVhPerCardSlide = 30  // vh consumed by slide-in animation per card
+const ScrollVhPerCardLight = 20  // vh consumed by brightness animation per card
+const ScrollVhPerCard = ScrollVhPerCardSlide + ScrollVhPerCardLight
+
+function calculateCardScrollPositions(cardCount: number, viewportHeight: number) {
+  const settlePx = (SettleVhBeforeCards / 100) * viewportHeight
+  const pxPerCard = (ScrollVhPerCard / 100) * viewportHeight
+  const pxPerSlide = (ScrollVhPerCardSlide / 100) * viewportHeight
+
+  const slideStarts: number[] = []
+  const slideEnds: number[] = []
+  const lightEnds: number[] = []
+
+  for (let cardIndex = 0; cardIndex < cardCount; cardIndex++) {
+    const cardStart = settlePx + cardIndex * pxPerCard
+    slideStarts.push(cardStart)
+    slideEnds.push(cardStart + pxPerSlide)
+    lightEnds.push(cardStart + pxPerCard)
+  }
+
+  // Total container height: viewport (sticky view) + settle + all cards + one extra vh
+  const totalPx = viewportHeight + settlePx + cardCount * pxPerCard + viewportHeight * 0.2
+  return { slideStarts, slideEnds, lightEnds, totalPx }
+}
 
 const shortDesc = (text: string) => {
   const line = text.split('\n').find(l => l.trim()) ?? ''
@@ -23,32 +50,50 @@ export default function Exhibitions() {
   const sectionRefs = useRef<HTMLElement[]>([])
   const imageRefs   = useRef<HTMLDivElement[]>([])
   const overlayRefs = useRef<HTMLDivElement[]>([])
-  const clippingGridRefs = useRef<HTMLDivElement[]>([])
+
+  // Outer scroll containers (one per exhibition)
+  const bgContainerRefs = useRef<(HTMLDivElement | null)[]>([])
+  const clippingContainerRefs = useRef<(HTMLDivElement | null)[]>([])
+
+  // Individual card refs per exhibition
+  const bgCardRefs = useRef<HTMLDivElement[][]>([])
+  const clippingCardRefs = useRef<HTMLDivElement[][]>([])
+
   const [dominantColors, setDominantColors] = useState<Record<number, string>>({})
   const [selectedClipping, setSelectedClipping] = useState<{ exhibitionId: number; clippingIndex: number } | null>(null)
+
+  // Stable sorted items reference to prevent spurious re-renders
+  const sortedItems = useMemo(
+    () => [...items].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)),
+    [items]
+  )
 
   useEffect(() => {
     dispatch(fetchExhibitions())
   }, [dispatch])
 
   useEffect(() => {
-    items.forEach((exhibition) => {
+    sortedItems.forEach((exhibition) => {
       if (exhibition.cover_image && !dominantColors[exhibition.id]) {
         extractDominantColor(exhibition.cover_image).then(color => {
           setDominantColors(prev => ({ ...prev, [exhibition.id]: color }))
         })
       }
     })
-  }, [items, dominantColors])
+  }, [sortedItems, dominantColors])
 
   useEffect(() => {
-    if (!items.length) return
+    if (!sortedItems.length) return
+
+    const viewportHeight = window.innerHeight
+    const offscreenLeft = -viewportHeight * 1.5
+    const offscreenRight = viewportHeight * 1.5
 
     const ctx = gsap.context(() => {
-      items.forEach((_, i) => {
-        const section = sectionRefs.current[i]
-        const image   = imageRefs.current[i]
-        const overlay = overlayRefs.current[i]
+      sortedItems.forEach((_, exhibitionIndex) => {
+        const section = sectionRefs.current[exhibitionIndex]
+        const image   = imageRefs.current[exhibitionIndex]
+        const overlay = overlayRefs.current[exhibitionIndex]
         if (!section || !image || !overlay) return
 
         // Parallax: image drifts as section scrolls through the viewport
@@ -83,48 +128,92 @@ export default function Exhibitions() {
             },
           }
         )
-      })
 
-      // Clippings animation: Cards slide in + light up as they scroll into view
-      // Each card animates with staggered delay based on its position
-      items.forEach((_, i) => {
-        const clippingGrid = clippingGridRefs.current[i]
-        if (!clippingGrid) return
+        // ── Background cards — sticky pattern ───────────────────────────────
+        const bgContainer = bgContainerRefs.current[exhibitionIndex]
+        const bgCards = (bgCardRefs.current[exhibitionIndex] ?? []).filter(Boolean)
+        if (bgContainer && bgCards.length) {
+          const pos = calculateCardScrollPositions(bgCards.length, viewportHeight)
+          bgContainer.style.height = `${pos.totalPx}px`
 
-        const cards = clippingGrid.querySelectorAll('[data-clipping-card]')
-        if (!cards.length) return
+          bgCards.forEach((card, cardIndex) => {
+            gsap.set(card, { x: cardIndex % 2 === 0 ? offscreenLeft : offscreenRight, filter: 'brightness(0.2)' })
+          })
 
-        // Each card animates individually with staggered viewport positioning
-        cards.forEach((card, cardIndex) => {
-          const cardCount = cards.length
-          // Stagger each card's trigger point: earlier cards trigger higher up in viewport
-          const delayPercent = (cardIndex / Math.max(1, cardCount - 1)) * 40  // 0% to 40% stagger
-          const startViewportPercent = 75 - delayPercent
-          const endViewportPercent = 25 - delayPercent
+          bgCards.forEach((card, cardIndex) => {
+            // Phase 1: slide in from left (even) or right (odd)
+            gsap.to(card, {
+              x: 0,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: bgContainer,
+                start: `${pos.slideStarts[cardIndex]}px top`,
+                end: `${pos.slideEnds[cardIndex]}px top`,
+                scrub: 1,
+              },
+            })
 
-          gsap.fromTo(card,
-            { xPercent: -100, filter: 'brightness(0.4)' },
-            {
-              xPercent: 0,
+            // Phase 2: light up after card reaches position
+            gsap.to(card, {
               filter: 'brightness(1)',
               ease: 'none',
               scrollTrigger: {
-                trigger: card,
-                start: `top ${startViewportPercent}%`,
-                end: `top ${endViewportPercent}%`,
+                trigger: bgContainer,
+                start: `${pos.slideEnds[cardIndex]}px top`,
+                end: `${pos.lightEnds[cardIndex]}px top`,
                 scrub: 1,
               },
-            }
-          )
-        })
+            })
+          })
+        }
+
+        // ── Clipping cards — sticky pattern ─────────────────────────────────
+        const clippingContainer = clippingContainerRefs.current[exhibitionIndex]
+        const clippingCards = (clippingCardRefs.current[exhibitionIndex] ?? []).filter(Boolean)
+        if (clippingContainer && clippingCards.length) {
+          const pos = calculateCardScrollPositions(clippingCards.length, viewportHeight)
+          clippingContainer.style.height = `${pos.totalPx}px`
+
+          clippingCards.forEach((card, cardIndex) => {
+            gsap.set(card, { x: cardIndex % 2 === 0 ? offscreenLeft : offscreenRight, filter: 'brightness(0.2)' })
+          })
+
+          clippingCards.forEach((card, cardIndex) => {
+            // Phase 1: slide in
+            gsap.to(card, {
+              x: 0,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: clippingContainer,
+                start: `${pos.slideStarts[cardIndex]}px top`,
+                end: `${pos.slideEnds[cardIndex]}px top`,
+                scrub: 1,
+              },
+            })
+
+            // Phase 2: light up
+            gsap.to(card, {
+              filter: 'brightness(1)',
+              ease: 'none',
+              scrollTrigger: {
+                trigger: clippingContainer,
+                start: `${pos.slideEnds[cardIndex]}px top`,
+                end: `${pos.lightEnds[cardIndex]}px top`,
+                scrub: 1,
+              },
+            })
+          })
+        }
       })
+
+      ScrollTrigger.refresh()
     })
 
     return () => ctx.revert()
-  }, [items])
+  }, [sortedItems])
 
   // No exhibitions yet — show the global artworks gallery
-  if (!loading && items.length === 0) {
+  if (!loading && sortedItems.length === 0) {
     return <Gallery />
   }
 
@@ -138,8 +227,9 @@ export default function Exhibitions() {
 
   return (
     <div className={styles.container}>
-      {items.map((exhibition, i) => {
+      {sortedItems.map((exhibition, i) => {
         const dominantColor = dominantColors[exhibition.id] || 'rgb(80, 80, 80)'
+        const bgLines = exhibition.background?.split('\n').filter(l => l.trim()) ?? []
         return (
           <div key={exhibition.id}>
             {/* ─── Intro section ─────────────────────────────────────────────────────────────── */}
@@ -178,7 +268,7 @@ export default function Exhibitions() {
                   className={styles.overlay}
                 >
                   <span data-anim="" className={styles.index}>
-                    {String(i + 1).padStart(2, '0')} / {String(items.length).padStart(2, '0')}
+                    {String(i + 1).padStart(2, '0')} / {String(sortedItems.length).padStart(2, '0')}
                   </span>
 
                   <div className={styles.overlayBottom}>
@@ -194,58 +284,73 @@ export default function Exhibitions() {
               </Link>
             </section>
 
-            {/* ─── Background section ────────────────────────────────────────────────────────────────── */}
-            {exhibition.background && (
-              <section className={styles.backgroundSection} style={{ backgroundColor: dominantColor }}>
-                <h2 className={styles.backgroundTitle}>{exhibition.name}</h2>
-                <div className={styles.backgroundLabel}>Background</div>
-                <div className={styles.backgroundContent}>
-                  <div className={styles.backgroundMasonryGrid}>
-                    {exhibition.background.split('\n').filter(line => line.trim()).map((line, idx) => (
-                      <div key={idx} className={styles.backgroundMasonryItem}>
-                        <p className={styles.backgroundText}>{line}</p>
+            {/* ─── Background section — sticky pattern ──────────────────────────────────── */}
+            {bgLines.length > 0 && (
+              <div ref={el => { bgContainerRefs.current[i] = el }}>
+                <div className={styles.bgSticky}>
+                  <section className={styles.backgroundSection} style={{ backgroundColor: dominantColor }}>
+                    <h2 className={styles.backgroundTitle}>{exhibition.name}</h2>
+                    <div className={styles.backgroundLabel}>Background</div>
+                    <div className={styles.backgroundContent}>
+                      <div className={styles.backgroundMasonryGrid}>
+                        {bgLines.map((line, idx) => (
+                          <div
+                            key={idx}
+                            className={styles.backgroundMasonryItem}
+                            ref={el => {
+                              if (!bgCardRefs.current[i]) bgCardRefs.current[i] = []
+                              if (el) bgCardRefs.current[i][idx] = el
+                            }}
+                          >
+                            <p className={styles.backgroundText}>{line}</p>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  </section>
                 </div>
-              </section>
+              </div>
             )}
 
-            {/* ─── Press/Clippings section ──────────────────────────────────────────────────────────────── */}
+            {/* ─── Press/Clippings section — sticky pattern ─────────────────────────────── */}
             {exhibition.clippings && exhibition.clippings.length > 0 && (
-              <section className={styles.clippingsSection} style={{ backgroundColor: dominantColor }}>
-                <h2 className={styles.clippingsTitle}>Check it out where I was!</h2>
-                <div className={styles.clippingsLabel}>Press</div>
-                <div className={styles.clippingsContent}>
-                  <div
-                    className={styles.clippingsGrid}
-                    ref={el => { if (el) clippingGridRefs.current[i] = el }}
-                  >
-                    {exhibition.clippings.map((clippingEntry, entryIndex) => (
-                      <div
-                        key={entryIndex}
-                        className={styles.clippingCard}
-                        data-clipping-card=""
-                        onClick={() => clippingEntry.screenshot_image && setSelectedClipping({ exhibitionId: exhibition.id, clippingIndex: entryIndex })}
-                        style={{ cursor: clippingEntry.screenshot_image ? 'pointer' : 'default', filter: 'brightness(0.4)' }}
-                      >
-                        {clippingEntry.screenshot_image && (
-                          <div className={styles.clippingImageContainer}>
-                            <img
-                              src={clippingEntry.screenshot_image}
-                              alt={clippingEntry.title}
-                              className={styles.clippingImage}
-                            />
+              <div ref={el => { clippingContainerRefs.current[i] = el }}>
+                <div className={styles.clippingSticky}>
+                  <section className={styles.clippingsSection} style={{ backgroundColor: dominantColor }}>
+                    <h2 className={styles.clippingsTitle}>Check it out where I was!</h2>
+                    <div className={styles.clippingsLabel}>Press</div>
+                    <div className={styles.clippingsContent}>
+                      <div className={styles.clippingsGrid}>
+                        {exhibition.clippings.map((clippingEntry, entryIndex) => (
+                          <div
+                            key={entryIndex}
+                            className={styles.clippingCard}
+                            ref={el => {
+                              if (!clippingCardRefs.current[i]) clippingCardRefs.current[i] = []
+                              if (el) clippingCardRefs.current[i][entryIndex] = el
+                            }}
+                            onClick={() => clippingEntry.screenshot_image && setSelectedClipping({ exhibitionId: exhibition.id, clippingIndex: entryIndex })}
+                            style={{ cursor: clippingEntry.screenshot_image ? 'pointer' : 'default' }}
+                          >
+                            {clippingEntry.screenshot_image && (
+                              <div className={styles.clippingImageContainer}>
+                                <img
+                                  src={clippingEntry.screenshot_image}
+                                  alt={clippingEntry.title}
+                                  className={styles.clippingImage}
+                                />
+                              </div>
+                            )}
+                            <div className={styles.clippingCardDetails}>
+                              <span className={styles.clippingTitle}>{clippingEntry.title}</span>
+                            </div>
                           </div>
-                        )}
-                        <div className={styles.clippingCardDetails}>
-                          <span className={styles.clippingTitle}>{clippingEntry.title}</span>
-                        </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  </section>
                 </div>
-              </section>
+              </div>
             )}
           </div>
         )
