@@ -365,3 +365,36 @@
 
   &:focus { border-color: #444; }
 }
+
+// ─── Message notifications ────────────────────────────────────────────────────
+.message {
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 2px;
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+  animation: slideDown 0.2s ease-out;
+}
+
+.message-success {
+  background: #1a3d1a;
+  border-left: 3px solid #4caf50;
+  color: #a8e6a8;
+}
+
+.message-error {
+  background: #3d1a1a;
+  border-left: 3px solid #f44336;
+  color: #f8a8a8;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

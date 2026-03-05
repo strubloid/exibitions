@@ -37,6 +37,7 @@ export default function AdminPanel() {
   const [form, setForm]           = useState(EMPTY_ARTWORK_FORM)
   const [uploading, setUploading] = useState<number | null>(null)
   const [saving, setSaving]       = useState(false)
+  const [message, setMessage]     = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   // ── Exhibitions ────────────────────────────────────────────────────────────
   const [exhibitions, setExhibitions] = useState<Exhibition[]>([])
@@ -77,12 +78,23 @@ export default function AdminPanel() {
 
   const handleSave = async () => {
     setSaving(true)
-    if (editing) {
-      await fetch(`/api/artworks/${editing.id}`, { method: 'PUT', headers: authHeaders, body: JSON.stringify(form) })
-    } else {
-      await fetch('/api/artworks', { method: 'POST', headers: authHeaders, body: JSON.stringify(form) })
+    try {
+      if (editing) {
+        const res = await fetch(`/api/artworks/${editing.id}`, { method: 'PUT', headers: authHeaders, body: JSON.stringify(form) })
+        if (!res.ok) throw new Error('Save failed')
+        setMessage({ type: 'success', text: `✓ Artwork "${form.title}" updated` })
+      } else {
+        const res = await fetch('/api/artworks', { method: 'POST', headers: authHeaders, body: JSON.stringify(form) })
+        if (!res.ok) throw new Error('Create failed')
+        setMessage({ type: 'success', text: `✓ Artwork "${form.title}" created` })
+      }
+      setTimeout(() => setMessage(null), 3000)
+      handleCancel(); fetchArtworks()
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Failed to save artwork' })
+      setTimeout(() => setMessage(null), 3000)
     }
-    setSaving(false); handleCancel(); fetchArtworks()
+    setSaving(false)
   }
 
   const handleDelete = async (id: number) => {
@@ -93,9 +105,18 @@ export default function AdminPanel() {
 
   const handleImageUpload = async (artwork: Artwork, file: File) => {
     setUploading(artwork.id)
-    const fd = new FormData(); fd.append('image', file)
-    await fetch(`/api/artworks/${artwork.id}/image`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' }, body: fd })
-    setUploading(null); fetchArtworks()
+    try {
+      const fd = new FormData(); fd.append('image', file)
+      const res = await fetch(`/api/artworks/${artwork.id}/image`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' }, body: fd })
+      if (!res.ok) throw new Error('Upload failed')
+      setMessage({ type: 'success', text: `✓ Image uploaded for "${artwork.title}"` })
+      await fetchArtworks()
+      setTimeout(() => setMessage(null), 3000)
+    } catch (err) {
+      setMessage({ type: 'error', text: `✗ Failed to upload image for "${artwork.title}"` })
+      setTimeout(() => setMessage(null), 3000)
+    }
+    setUploading(null)
   }
 
   // ── Exhibitions CRUD ───────────────────────────────────────────────────────
@@ -207,10 +228,15 @@ export default function AdminPanel() {
 
           <section className={styles.listSection}>
             <h2>Artworks ({artworks.length})</h2>
+            {message && (
+              <div className={`${styles.message} ${styles[`message-${message.type}`]}`}>
+                {message.text}
+              </div>
+            )}
             {artworks.map((artwork) => (
               <div key={artwork.id} className={styles.item}>
                 <div className={styles.thumb}>
-                  {artwork.image ? <img src={artwork.image} alt={artwork.title} /> : <span>No image</span>}
+                  {artwork.image ? <img src={`${artwork.image}?t=${artwork.updated_at}`} alt={artwork.title} /> : <span>No image</span>}
                 </div>
                 <div className={styles.info}>
                   <strong>{artwork.title}</strong>
