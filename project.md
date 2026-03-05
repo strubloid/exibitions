@@ -248,8 +248,19 @@ A production-ready, containerized, full-stack art exhibition platform for immers
 - The poem display lives in the center of the sticky viewport, overlaid on the artwork image
 - The title/index info remains at bottom-left; the poem occupies the vertical center of the screen
 - Admin: no changes needed — the existing `description` field on each artwork stores the poem text, with stanza breaks written as blank lines between groups of 4 lines
+- **Refinements**:
+  - Line height set to 90px for better readability
+  - Blank spacers (BlankLinesBeforePoem: 5, BlankLinesAfterPoem: 30) rendered as DOM elements, fully part of scroll mechanics
+  - Scroll animation extends through all spacer elements, allowing comfortable reading of last line before transition
+  - Snap points only target real text lines, not spacers
+  - Track Y animation continues past last line to show trailing blank space
+  - Text properly centered with balanced white space before and after
 
-### Phase 19 — Exhibition Detail: Background & Press Clippings
+---
+
+## NEXT PHASE
+
+### Phase 19 — Exhibition Detail: Background & Press Clippings ⏳
 - On the individual exhibition page, below the 100vh cover intro, add two new scroll sections:
   - **Background**: a text section describing where and when the exhibition was presented (venue, city, dates, context). Stored as a `background` text field on the exhibition.
   - **Clippings**: a press coverage section listing links from internet, journals, and magazines where the exhibition was featured. Stored as a JSON array of `{ title, url, source, thumbnail, screenshot_image }` on the exhibition, that usualy people save the screenshot of it, as websites can be down, a screenshot cant.
