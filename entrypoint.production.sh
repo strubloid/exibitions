@@ -41,7 +41,7 @@ if [ -z "$APP_KEY" ]; then
 fi
 
 # Ensure Laravel cache directories exist
-mkdir -p /app/storage/framework/{cache,sessions,views}
+mkdir -p /app/storage/framework/cache /app/storage/framework/sessions /app/storage/framework/views
 
 php artisan config:clear
 php artisan route:cache
