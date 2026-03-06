@@ -41,10 +41,20 @@ if ! grep -q "laravel/sanctum" /app/composer.json; then
   php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider" --no-interaction
 fi
 
+# Ensure storage directories exist and have correct permissions
+mkdir -p /app/storage/app/public/artworks
+mkdir -p /app/storage/app/public/exhibitions
+mkdir -p /app/storage/logs
+chmod -R 777 /app/storage
+chmod -R 777 /app/bootstrap/cache
+
 # Run migrations and seed
 php artisan migrate --force --no-interaction
 php artisan db:seed --force --no-interaction
-php artisan storage:link --force
+
+# Create storage symlink
+rm -f /app/public/storage
+php artisan storage:link --force || echo "Warning: storage:link failed"
 
 echo "==> Starting Laravel..."
 
