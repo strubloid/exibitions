@@ -90,10 +90,19 @@ class ExhibitionController extends Controller
             default                     => imagecreatefromjpeg($file->getRealPath()),
         };
 
+        // Save full-quality WebP (Q85)
         imagewebp($source, $dir . '/' . $filename, 85);
+
+        // Generate compressed version (max 1200px longest edge, Q60)
+        $compressedFilename = 'exhibition-' . $exhibition->id . '-compressed.webp';
+        $this->generateCompressedImage($source, $dir . '/' . $compressedFilename);
+
         imagedestroy($source);
 
-        $exhibition->update(['cover_image' => '/storage/exhibitions/' . $filename]);
+        $exhibition->update([
+            'cover_image'            => '/storage/exhibitions/' . $filename,
+            'cover_image_compressed' => '/storage/exhibitions/' . $compressedFilename,
+        ]);
 
         return response()->json($exhibition->fresh());
     }
@@ -124,6 +133,30 @@ class ExhibitionController extends Controller
         return response()->json([
             'screenshot_image' => '/storage/exhibitions/clippings/' . $filename,
         ]);
+    }
+
+    private function generateCompressedImage(\GdImage $source, string $outputPath, int $maxEdge = 1200, int $quality = 60): void
+    {
+        $originalWidth = imagesx($source);
+        $originalHeight = imagesy($source);
+
+        if ($originalWidth <= $maxEdge && $originalHeight <= $maxEdge) {
+            imagewebp($source, $outputPath, $quality);
+            return;
+        }
+
+        if ($originalWidth >= $originalHeight) {
+            $newWidth = $maxEdge;
+            $newHeight = (int) round($originalHeight * ($maxEdge / $originalWidth));
+        } else {
+            $newHeight = $maxEdge;
+            $newWidth = (int) round($originalWidth * ($maxEdge / $originalHeight));
+        }
+
+        $resized = imagecreatetruecolor($newWidth, $newHeight);
+        imagecopyresampled($resized, $source, 0, 0, 0, 0, $newWidth, $newHeight, $originalWidth, $originalHeight);
+        imagewebp($resized, $outputPath, $quality);
+        imagedestroy($resized);
     }
 
     public function syncArtworks(Request $request, Exhibition $exhibition): JsonResponse

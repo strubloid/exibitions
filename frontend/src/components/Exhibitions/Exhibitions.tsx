@@ -279,7 +279,7 @@ export default function Exhibitions() {
                 >
                   {exhibition.cover_image ? (
                     <img
-                      src={exhibition.cover_image}
+                      src={exhibition.cover_image_compressed ?? exhibition.cover_image}
                       alt={exhibition.name}
                       className={styles.image}
                       loading={i === 0 ? 'eager' : 'lazy'}

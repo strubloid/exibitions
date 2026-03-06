@@ -5,6 +5,7 @@ export interface Artwork {
   title: string
   description: string | null
   image: string | null
+  image_compressed: string | null
   sort_order: number
   animation_style: string
   metadata: { palette?: string[] } | null

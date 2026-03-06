@@ -204,7 +204,7 @@ export default function ExhibitionView() {
 
         {exhibition.cover_image && (
           <div className={styles.cover}>
-            <img src={exhibition.cover_image} alt={exhibition.name} />
+            <img src={exhibition.cover_image_compressed ?? exhibition.cover_image} alt={exhibition.name} />
           </div>
         )}
 

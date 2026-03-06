@@ -11,6 +11,7 @@ class Artwork extends Model
         'title',
         'description',
         'image',
+        'image_compressed',
         'sort_order',
         'animation_style',
         'metadata',

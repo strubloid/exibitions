@@ -14,6 +14,7 @@ export interface Exhibition {
   clippings: ClippingEntry[] | null
   slug: string
   cover_image: string | null
+  cover_image_compressed: string | null
   sort_order: number
   artworks?: Artwork[]
   created_at: string

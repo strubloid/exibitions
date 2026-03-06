@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Exhibition extends Model
 {
-    protected $fillable = ['name', 'description', 'background', 'clippings', 'slug', 'cover_image', 'sort_order'];
+    protected $fillable = ['name', 'description', 'background', 'clippings', 'slug', 'cover_image', 'cover_image_compressed', 'sort_order'];
 
     protected $casts = [
         'clippings' => 'array',

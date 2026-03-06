@@ -485,7 +485,7 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                             className={styles.inner}
                         >
                             {artwork.image ? (
-                                <img src={artwork.image} alt={artwork.title} className={styles.image} loading={i === 0 ? "eager" : "lazy"} draggable={false} />
+                                <img src={artwork.image_compressed ?? artwork.image} alt={artwork.title} className={styles.image} loading={i === 0 ? "eager" : "lazy"} draggable={false} />
                             ) : (
                                 <div className={styles.placeholder}>
                                     <span>{artwork.title[0]}</span>

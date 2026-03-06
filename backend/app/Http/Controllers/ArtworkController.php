@@ -76,16 +76,48 @@ class ArtworkController extends Controller
         // Extract dominant palette before destroying the source
         $palette = $this->extractPalette($source);
 
-        // Convert and save as WebP at quality 85
+        // Save full-quality WebP (Q85)
         imagewebp($source, $dir . '/' . $filename, 85);
+
+        // Generate compressed version (max 1200px longest edge, Q60)
+        $compressedFilename = $artwork->id . '-compressed.webp';
+        $this->generateCompressedImage($source, $dir . '/' . $compressedFilename);
+
         imagedestroy($source);
 
         $artwork->update([
-            'image'    => '/storage/artworks/' . $filename,
-            'metadata' => array_merge($artwork->metadata ?? [], ['palette' => $palette]),
+            'image'            => '/storage/artworks/' . $filename,
+            'image_compressed' => '/storage/artworks/' . $compressedFilename,
+            'metadata'         => array_merge($artwork->metadata ?? [], ['palette' => $palette]),
         ]);
 
         return response()->json($artwork->fresh());
+    }
+
+    private function generateCompressedImage(\GdImage $source, string $outputPath, int $maxEdge = 1200, int $quality = 60): void
+    {
+        $originalWidth = imagesx($source);
+        $originalHeight = imagesy($source);
+
+        if ($originalWidth <= $maxEdge && $originalHeight <= $maxEdge) {
+            // Already small enough — just save at lower quality
+            imagewebp($source, $outputPath, $quality);
+            return;
+        }
+
+        // Scale so longest edge = maxEdge
+        if ($originalWidth >= $originalHeight) {
+            $newWidth = $maxEdge;
+            $newHeight = (int) round($originalHeight * ($maxEdge / $originalWidth));
+        } else {
+            $newHeight = $maxEdge;
+            $newWidth = (int) round($originalWidth * ($maxEdge / $originalHeight));
+        }
+
+        $resized = imagecreatetruecolor($newWidth, $newHeight);
+        imagecopyresampled($resized, $source, 0, 0, 0, 0, $newWidth, $newHeight, $originalWidth, $originalHeight);
+        imagewebp($resized, $outputPath, $quality);
+        imagedestroy($resized);
     }
 
     private function extractPalette(\GdImage $img): array
