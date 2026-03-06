@@ -1,11 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import type { AppDispatch, RootState } from '../../store'
 import { fetchExhibition, clearCurrent } from '../../store/exhibitionsSlice'
-import { extractDominantColor } from '../../utils/extractDominantColor'
 import Gallery from '../Gallery/Gallery'
 import styles from './ExhibitionView.module.scss'
 
@@ -42,21 +41,16 @@ export default function ExhibitionView() {
   const { slug } = useParams<{ slug: string }>()
   const dispatch = useDispatch<AppDispatch>()
   const { current: exhibition, loading } = useSelector((state: RootState) => state.exhibitions)
-  const [dominantColor, setDominantColor] = useState<string>('rgb(80, 80, 80)')
 
-  // Darken dominant color to ~15% brightness — keeps hue tint but stays near-black for readability
-  const sectionBackground = useMemo(() => {
-    const match = dominantColor.match(/\d+/g)
-    if (!match || match.length < 3) return '#0a0a0a'
-    const [r, g, b] = match.map(Number)
-    const darkenFactor = 0.15
-    return `rgb(${Math.round(r * darkenFactor)}, ${Math.round(g * darkenFactor)}, ${Math.round(b * darkenFactor)})`
-  }, [dominantColor])
   const [selectedClippingIndex, setSelectedClippingIndex] = useState<number | null>(null)
 
   // Outer scroll containers (get explicit height set by GSAP effect)
   const bgContainerRef = useRef<HTMLDivElement>(null)
   const clippingContainerRef = useRef<HTMLDivElement>(null)
+
+  // Section refs for scroll-driven color animation
+  const bgSectionRef = useRef<HTMLElement>(null)
+  const clippingSectionRef = useRef<HTMLElement>(null)
 
   // Individual card refs — populated from JSX render
   const bgCardRefs = useRef<HTMLDivElement[]>([])
@@ -66,12 +60,6 @@ export default function ExhibitionView() {
     if (slug) dispatch(fetchExhibition(slug))
     return () => { dispatch(clearCurrent()) }
   }, [slug, dispatch])
-
-  useEffect(() => {
-    if (exhibition?.cover_image) {
-      extractDominantColor(exhibition.cover_image).then(setDominantColor)
-    }
-  }, [exhibition?.cover_image])
 
   // Scroll-driven card animations — Gallery-style sticky pattern
   useEffect(() => {
@@ -83,6 +71,9 @@ export default function ExhibitionView() {
     // regardless of which column they sit in (xPercent only moves by the card's own width)
     const offscreenLeft = -viewportHeight * 1.5   // well off the left edge
     const offscreenRight = viewportHeight * 1.5   // well off the right edge
+
+    // Dark rainbow: cycles hue 0→360 as you scroll, low saturation + very low lightness
+    const hueToDeepColor = (hue: number) => `hsl(${hue}, 50%, 8%)`
 
     const ctx = gsap.context(() => {
       // ── Background section ──────────────────────────────────────────────────
@@ -136,6 +127,21 @@ export default function ExhibitionView() {
             })
           }
         })
+
+        // Scroll-driven rainbow: hue cycles 0→360 across the background section
+        if (bgSectionRef.current) {
+          gsap.set(bgSectionRef.current, { backgroundColor: hueToDeepColor(0) })
+          ScrollTrigger.create({
+            trigger: bgContainerRef.current,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: 0.5,
+            onUpdate: (self) => {
+              const hue = self.progress * 360
+              if (bgSectionRef.current) bgSectionRef.current.style.backgroundColor = hueToDeepColor(hue)
+            },
+          })
+        }
       }
 
       // ── Clippings section ───────────────────────────────────────────────────
@@ -188,6 +194,21 @@ export default function ExhibitionView() {
             })
           }
         })
+
+        // Scroll-driven rainbow for clippings: continues from where background ended
+        if (clippingSectionRef.current) {
+          gsap.set(clippingSectionRef.current, { backgroundColor: hueToDeepColor(0) })
+          ScrollTrigger.create({
+            trigger: clippingContainerRef.current,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: 0.5,
+            onUpdate: (self) => {
+              const hue = self.progress * 360
+              if (clippingSectionRef.current) clippingSectionRef.current.style.backgroundColor = hueToDeepColor(hue)
+            },
+          })
+        }
       }
 
       ScrollTrigger.refresh()
@@ -259,7 +280,7 @@ export default function ExhibitionView() {
         <div ref={bgContainerRef}>
           {/* Sticky inner — stays in viewport while outer is scrolled */}
           <div className={styles.bgSticky}>
-            <section className={styles.backgroundSection} style={{ backgroundColor: sectionBackground }}>
+            <section ref={bgSectionRef} className={styles.backgroundSection}>
               <h2 className={styles.backgroundTitle}>{exhibition.name}</h2>
               <div className={styles.backgroundLabel}>Background</div>
               <div className={styles.backgroundContent}>
@@ -285,7 +306,7 @@ export default function ExhibitionView() {
         // Same sticky pattern for clippings
         <div ref={clippingContainerRef}>
           <div className={styles.clippingSticky}>
-            <section className={styles.clippingsSection} style={{ backgroundColor: sectionBackground }}>
+            <section ref={clippingSectionRef} className={styles.clippingsSection}>
               <h2 className={styles.clippingsTitle}>Check it out where I was!</h2>
               <div className={styles.clippingsLabel}>Press</div>
               <div className={styles.clippingsContent}>

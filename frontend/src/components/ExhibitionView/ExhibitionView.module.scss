@@ -262,7 +262,7 @@
   align-items: center;
   justify-content: center;
   padding: 6rem 3rem;
-  transition: background-color 0.6s ease;
+  background-color: hsl(0, 50%, 8%);  // initial dark red; GSAP cycles hue on scroll
   position: relative;
   overflow: hidden;
 
@@ -437,7 +437,7 @@
   align-items: center;
   justify-content: center;
   padding: 6rem 3rem;
-  transition: background-color 0.6s ease;
+  background-color: hsl(0, 50%, 8%);  // initial dark; GSAP cycles hue on scroll
   position: relative;
   overflow: hidden;
 
