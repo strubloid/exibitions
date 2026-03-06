@@ -438,7 +438,10 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
 
             const goingForward = absDy >= absDx ? dy < 0 : dx < 0;
             let nextIndex = goingForward ? currentIndex + 1 : currentIndex - 1;
-            nextIndex = Math.max(0, Math.min(starts.length - 1, nextIndex));
+
+            // Don't intercept swipe when past the last or before the first artwork —
+            // let natural scrolling take over so users can reach sections below/above the gallery
+            if (nextIndex < 0 || nextIndex >= starts.length) return;
 
             window.scrollTo({ top: starts[nextIndex], behavior: "smooth" });
         };

@@ -267,7 +267,7 @@
   overflow: hidden;
 
   @media (max-width: 768px) {
-    padding: 4rem 2rem;
+    padding: 2rem 1rem;
   }
 }
 
@@ -323,7 +323,7 @@
   z-index: 2;
   width: 100%;
   max-width: 1200px;
-  margin-top: 3rem;
+  margin-top: 1.5rem;
 
   @media (min-width: 768px) {
     margin-top: 8rem;
@@ -340,6 +340,11 @@
   gap: 2rem;
   width: 100%;
   overflow: hidden;
+
+  @media (max-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
 
   @media (min-width: 768px) {
     grid-template-columns: repeat(3, 1fr);
@@ -369,6 +374,16 @@
   &:nth-child(2) { min-height: 140px; }
   &:nth-child(3) { min-height: 180px; }
   &:nth-child(4n+1) { min-height: 200px; }
+
+  @media (max-width: 600px) {
+    padding: 1rem 0.75rem;
+    min-height: 90px;
+
+    &:nth-child(1) { min-height: 100px; }
+    &:nth-child(2) { min-height: 90px; }
+    &:nth-child(3) { min-height: 110px; }
+    &:nth-child(4n+1) { min-height: 120px; }
+  }
 
   &:hover {
     background: rgba(255, 255, 255, 0.08);
@@ -427,7 +442,7 @@
   overflow: hidden;
 
   @media (max-width: 768px) {
-    padding: 4rem 2rem;
+    padding: 2rem 1rem;
   }
 }
 
@@ -483,7 +498,7 @@
   z-index: 2;
   width: 100%;
   max-width: 1200px;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
 
   @media (min-width: 768px) {
     margin-top: 2rem;
@@ -499,6 +514,11 @@
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 2rem;
   width: 100%;
+
+  @media (max-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
 
   @media (min-width: 768px) {
     grid-template-columns: repeat(3, 1fr);
@@ -528,6 +548,16 @@
   &:nth-child(2) { min-height: 140px; }
   &:nth-child(3) { min-height: 180px; }
   &:nth-child(4n+1) { min-height: 200px; }
+
+  @media (max-width: 600px) {
+    padding: 1rem 0.75rem;
+    min-height: 90px;
+
+    &:nth-child(1) { min-height: 100px; }
+    &:nth-child(2) { min-height: 90px; }
+    &:nth-child(3) { min-height: 110px; }
+    &:nth-child(4n+1) { min-height: 120px; }
+  }
 
   &:hover {
     background: rgba(255, 255, 255, 0.08);
