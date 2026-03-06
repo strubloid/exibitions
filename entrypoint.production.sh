@@ -40,16 +40,33 @@ if [ -z "$APP_KEY" ]; then
   php artisan key:generate --force --no-interaction
 fi
 
+# Ensure Laravel cache directories exist
+mkdir -p /app/storage/framework/{cache,sessions,views}
+
 php artisan config:clear
 php artisan route:cache
 
-# Run migrations if DB is configured
+php artisan storage:link --force
+
+# Start nginx + php immediately so fly.io health checks pass
+echo "==> Starting production services..."
+supervisord -c /etc/supervisor/conf.d/supervisord.conf &
+SUPERVISOR_PID=$!
+
+# Wait for PHP server to be ready before running migrations
+# (artisan serve is single-threaded, so migrations block API requests briefly)
 if [ -n "$DB_HOST" ]; then
+  echo "==> Waiting for PHP server..."
+  for attempt in $(seq 1 10); do
+    if curl -s -o /dev/null http://127.0.0.1:8000 2>/dev/null; then
+      break
+    fi
+    sleep 1
+  done
+  echo "==> Running migrations..."
   php artisan migrate --force --no-interaction
   php artisan db:seed --force --no-interaction
 fi
 
-php artisan storage:link --force
-
-echo "==> Starting production services..."
-exec supervisord -c /etc/supervisor/conf.d/supervisord.conf
+# Hand control back to supervisord
+wait $SUPERVISOR_PID
