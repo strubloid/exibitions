@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import gsap from 'gsap'
@@ -43,6 +43,15 @@ export default function ExhibitionView() {
   const dispatch = useDispatch<AppDispatch>()
   const { current: exhibition, loading } = useSelector((state: RootState) => state.exhibitions)
   const [dominantColor, setDominantColor] = useState<string>('rgb(80, 80, 80)')
+
+  // Darken dominant color to ~15% brightness — keeps hue tint but stays near-black for readability
+  const sectionBackground = useMemo(() => {
+    const match = dominantColor.match(/\d+/g)
+    if (!match || match.length < 3) return '#0a0a0a'
+    const [r, g, b] = match.map(Number)
+    const darkenFactor = 0.15
+    return `rgb(${Math.round(r * darkenFactor)}, ${Math.round(g * darkenFactor)}, ${Math.round(b * darkenFactor)})`
+  }, [dominantColor])
   const [selectedClippingIndex, setSelectedClippingIndex] = useState<number | null>(null)
 
   // Outer scroll containers (get explicit height set by GSAP effect)
@@ -250,7 +259,7 @@ export default function ExhibitionView() {
         <div ref={bgContainerRef}>
           {/* Sticky inner — stays in viewport while outer is scrolled */}
           <div className={styles.bgSticky}>
-            <section className={styles.backgroundSection} style={{ backgroundColor: dominantColor }}>
+            <section className={styles.backgroundSection} style={{ backgroundColor: sectionBackground }}>
               <h2 className={styles.backgroundTitle}>{exhibition.name}</h2>
               <div className={styles.backgroundLabel}>Background</div>
               <div className={styles.backgroundContent}>
@@ -276,7 +285,7 @@ export default function ExhibitionView() {
         // Same sticky pattern for clippings
         <div ref={clippingContainerRef}>
           <div className={styles.clippingSticky}>
-            <section className={styles.clippingsSection} style={{ backgroundColor: dominantColor }}>
+            <section className={styles.clippingsSection} style={{ backgroundColor: sectionBackground }}>
               <h2 className={styles.clippingsTitle}>Check it out where I was!</h2>
               <div className={styles.clippingsLabel}>Press</div>
               <div className={styles.clippingsContent}>
