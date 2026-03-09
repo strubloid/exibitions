@@ -20,6 +20,13 @@ const ImageFullyVisible = "inset(0% 0% 0% 0%)";
 const ImageCollapseVertical = "inset(50% 0% 50% 0%)";
 const ImageCollapseHorizontal = "inset(0% 50% 0% 50%)";
 
+// Mobile breakpoint — below this width, animations are simplified
+const MobileBreakpointPx = 768;
+
+function isMobileViewport(): boolean {
+    return typeof window !== "undefined" && window.innerWidth < MobileBreakpointPx;
+}
+
 // ── Scroll timing knobs ───────────────────────────────────────────────────────
 const ImageTransitionScrollVh = 80; // vh of scroll to animate in/out an image (clip-path)
 const SettleBeforePoemVh = 7; // vh of calm viewing before the poem lines start
@@ -174,7 +181,11 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
     }, [dispatch, propArtworks]);
 
     useEffect(() => {
-        if ("ontouchstart" in window) ScrollTrigger.normalizeScroll(true);
+        // Disabled normalizeScroll on mobile — it fights native touch scrolling
+        // and makes the site feel broken. Only enable on non-mobile touch devices (tablets in landscape).
+        if ("ontouchstart" in window && !isMobileViewport()) {
+            ScrollTrigger.normalizeScroll(true);
+        }
     }, []);
 
     useEffect(() => {
@@ -187,6 +198,10 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
         containerRef.current.style.height = `${pos.total}px`;
 
         const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const isMobile = isMobileViewport();
+        // On mobile, use simplified animations (same as reduced motion) to avoid
+        // frustrating clip-path iris transitions and 3D effects on small screens
+        const useSimpleAnimations = prefersReduced || isMobile;
 
         const ctx = gsap.context(() => {
             // ctx.revert() in the cleanup handles removing Gallery's own triggers;
@@ -202,7 +217,7 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                 const imageVisibleStart = starts[i];
                 const imageVisibleEnd = poemEnds[i];
 
-                if (prefersReduced) {
+                if (useSimpleAnimations) {
                     var zIndexValue = i === 0 ? items.length : i - items.length;
 
                     // ── REDUCED MOTION: simple opacity cross-fades ─────────────────────
@@ -335,16 +350,20 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
                         start: `${poemStarts[i]}px top`,
                         end: `${poemEnds[i]}px top`,
                         scrub: 0.5,
-                        snap: {
-                            snapTo: (progress) => {
-                                // Snap only to real line positions, not spacers
-                                const snappedStep = Math.round(progress * realLineSteps) / realLineSteps;
-                                return snappedStep;
+                        // Disable snap on mobile — it causes jarring jumps and fights
+                        // native touch momentum, making scroll feel stuck or unpredictable
+                        ...(isMobile ? {} : {
+                            snap: {
+                                snapTo: (progress: number) => {
+                                    // Snap only to real line positions, not spacers
+                                    const snappedStep = Math.round(progress * realLineSteps) / realLineSteps;
+                                    return snappedStep;
+                                },
+                                duration: { min: 0.1, max: 0.3 },
+                                delay: 0.05,
+                                ease: "power2.inOut",
                             },
-                            duration: { min: 0.1, max: 0.3 },
-                            delay: 0.05,
-                            ease: "power2.inOut",
-                        },
+                        }),
                         onUpdate: (self) => {
                             // Map progress through ALL items to show spacers
                             const currentStep = self.progress * totalSteps;
@@ -398,9 +417,11 @@ export default function Gallery({ artworks: propArtworks }: GalleryProps = {}) {
         return () => ctx.revert();
     }, [items]);
 
-    // ── TOUCH SWIPE — jump to nearest artwork ─────────────────────────────────────
+    // ── TOUCH SWIPE — jump to nearest artwork (disabled on mobile phones) ──────
+    // On mobile, this handler hijacks natural scroll gestures and makes scrolling
+    // feel broken. Only enable on larger touch devices where swipe-to-jump is useful.
     useEffect(() => {
-        if (!items.length) return;
+        if (!items.length || isMobileViewport()) return;
 
         let touchStartX = 0;
         let touchStartY = 0;

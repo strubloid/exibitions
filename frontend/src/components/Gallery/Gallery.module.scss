@@ -108,8 +108,15 @@
     transparent         100%
   );
 
-  @media (max-width: 600px) {
+  @media (max-width: 768px) {
     padding: 6rem 1.5rem 2rem;
+    // Stronger gradient on mobile for better text contrast over images
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.92) 0%,
+      rgba(0, 0, 0, 0.65) 40%,
+      transparent         100%
+    );
   }
 }
 
@@ -121,6 +128,11 @@
   color: rgba(255, 255, 255, 0.35);
   margin-bottom: 0.6rem;
   font-weight: 400;
+
+  @media (max-width: 768px) {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.55);
+  }
 }
 
 .title {
@@ -131,6 +143,12 @@
   color: #fff;
   line-height: 1.1;
   max-width: 14ch;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+
+  @media (max-width: 768px) {
+    font-size: clamp(1.8rem, 6vw, 2.8rem);
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
+  }
 }
 
 .description {
@@ -140,6 +158,11 @@
   max-width: 44ch;
   line-height: 1.65;
   font-weight: 300;
+
+  @media (max-width: 768px) {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.65);
+  }
 
   @media (max-width: 480px) {
     display: none;
@@ -190,6 +213,12 @@
   pointer-events: none;
   overflow: hidden;
 
+  // On mobile, allow touch interactions to pass through to poem lines
+  // so users can long-press to select text
+  @media (max-width: 768px) {
+    pointer-events: auto;
+  }
+
   // Tight center window — only the active ±2 lines show through
   -webkit-mask-image: linear-gradient(
     to bottom,
@@ -239,13 +268,18 @@
   font-style: italic;
   color: #fff;
   text-align: center;
-  // letter-spacing: 0.02em;
   opacity: 0;                  // GSAP drives this at runtime
   white-space: normal;
   overflow: visible;
   user-select: text;
   pointer-events: auto;
   cursor: text;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+
+  @media (max-width: 768px) {
+    font-size: clamp(1.1rem, 4vw, 1.6rem);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+  }
 }
 
 .poemLineSelected {
@@ -253,7 +287,6 @@
   color: #fff;
   font-size: clamp(1.2rem, 3vw, 3rem);
   letter-spacing: 0.04em;
-  // min-width: 70vw;
   max-width: 70vw;
   margin: 0 auto;
   padding: 0.3em;
@@ -264,12 +297,34 @@
   white-space: normal;
   background-color: rgba(97, 11, 134, 0.185);
   border-radius: 30px 0px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+
+  @media (max-width: 768px) {
+    font-size: clamp(1.3rem, 5vw, 2rem);
+    max-width: 90vw;
+    background-color: rgba(97, 11, 134, 0.25);
+  }
 }
 
 // Blank line between stanzas — same height so scroll math stays uniform
 .poemSpacer {
   height: 90px;
   opacity: 0;
+}
+
+// ─── Disable decorative animations on mobile ────────────────────────────────
+@media (max-width: 768px) {
+  .sticky::after {
+    // Disable film grain animation on mobile — saves CPU and reduces visual noise
+    animation: none;
+    opacity: 0.02;
+  }
+
+  .scrollLine {
+    animation: none;
+    opacity: 0.4;
+    transform: scaleY(1);
+  }
 }
 
 // ─── Reduced motion — disable decorative animations ───────────────────────────

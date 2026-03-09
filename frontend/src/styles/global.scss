@@ -25,6 +25,11 @@ body::before {
   pointer-events: none;
   background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.65) 100%);
   will-change: transform;
+
+  // Softer vignette on mobile — the full effect darkens edges too aggressively on small screens
+  @media (max-width: 768px) {
+    background: radial-gradient(ellipse at 50% 50%, transparent 65%, rgba(0, 0, 0, 0.35) 100%);
+  }
 }
 
 // Custom PNG cursor for the whole app

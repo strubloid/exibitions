@@ -315,14 +315,43 @@ A production-ready, containerized, full-stack art exhibition platform for immers
   - Frosted glass cards with hover effects
 - Press section NOT shown on individual pages (only on homepage) ✅
 
-### Phase 20 — Preloading & Performance
+### Phase 20 — Mobile Experience Overhaul
+**Problem:** Real user feedback reports that the mobile experience is frustrating and borderline unusable. Four core complaints:
+
+**Task 1 — Disable or simplify animations on mobile**
+- Animations (clip-path transitions, blur pulses, 3D rolls, scale breath) are perceived as "plain annoying" on small screens
+- Reduce or remove GSAP scroll-driven effects on mobile (viewport < 768px)
+- Keep simple opacity cross-fades between artworks instead of cinematic iris transitions
+- Respect `prefers-reduced-motion` more aggressively (currently Phase 16 partially handles this)
+
+**Task 2 — Improve mobile text readability**
+- Text is too small and has too little contrast on mobile devices
+- Increase base font sizes for poem lines, titles, and descriptions on mobile
+- Improve contrast: ensure text meets WCAG AA contrast ratio (4.5:1 minimum)
+- Add stronger text shadows or background overlays behind text on images
+- Review typography across all breakpoints (phones < 480px, tablets < 768px)
+
+**Task 3 — Fix mobile scroll behavior**
+- Scrolling is described as "a huge challenge" — the site "barely works" on mobile
+- Investigate `ScrollTrigger.normalizeScroll(true)` conflicts with native touch scrolling
+- Ensure scroll is smooth and predictable without fighting the user's finger
+- Test snap points on mobile — they may be causing jarring jumps or stuck states
+- Consider disabling scroll snapping on touch devices entirely if it hinders usability
+
+**Task 4 — Allow text selection on poem lines (mobile)**
+- Users cannot highlight/select poem text — attempting to select causes scroll movement
+- Differentiate between scroll gestures and text-selection gestures (e.g., long-press to select vs swipe to scroll)
+- Consider a "tap to pause scroll" mode or a copy button per poem line
+- Ensure `user-select` CSS is not set to `none` on poem text elements
+
+### Phase 21 — Preloading & Performance
 - Prefetch next artwork image: `<link rel="prefetch">` injected dynamically after current image loads
 - Intersection Observer to mount/unmount distant layers (> ±2 from active)
 - Vite `build.rollupOptions.output.manualChunks` to split GSAP into its own chunk
 - `will-change: clip-path, transform` on transitioning layers, removed after transition ends
 - Lazy hydration: artwork info text deferred until image enters viewport
 
-### Phase 21 — Final Production Deploy
+### Phase 22 — Final Production Deploy
 - All services running on fly.io with Postgres
 - `flyctl secrets set` for all production env vars
 - Custom domain + SSL via fly.io certs
