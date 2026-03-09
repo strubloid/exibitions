@@ -29,8 +29,11 @@ function isMobileViewport(): boolean {
 
 // ── Scroll timing knobs ───────────────────────────────────────────────────────
 const ImageTransitionScrollVh = 80; // vh of scroll to animate in/out an image (clip-path)
+const ImageTransitionScrollVhMobile = 40; // mobile: shorter transition (less wasted scroll)
 const SettleBeforePoemVh = 7; // vh of calm viewing before the poem lines start
+const SettleBeforePoemVhMobile = 3; // mobile: shorter settle
 const ScrollVhPerPoemLine = 8; // vh of scroll consumed per poem line
+const ScrollVhPerPoemLineMobile = 4; // mobile: 2 lines advance per equivalent scroll distance
 const PoemLineHeightPx = 90; // px height per line — must match .poemLine in SCSS
 const BlankLinesBeforePoem = 0; // blank spacers before poem text starts (forces scroll delay before content)
 const BlankLinesAfterPoem = 2; // blank spacers after poem text ends (allows reading last line before transition)
@@ -107,9 +110,10 @@ interface Positions {
 }
 
 function calculateScrollPositions(items: Artwork[], viewportHeight: number): Positions {
-    const imageTransitionPx = (ImageTransitionScrollVh / 100) * viewportHeight;
-    const settleBeforePoemPx = (SettleBeforePoemVh / 100) * viewportHeight;
-    const scrollPxPerPoemLine = (ScrollVhPerPoemLine / 100) * viewportHeight;
+    const mobile = isMobileViewport();
+    const imageTransitionPx = ((mobile ? ImageTransitionScrollVhMobile : ImageTransitionScrollVh) / 100) * viewportHeight;
+    const settleBeforePoemPx = ((mobile ? SettleBeforePoemVhMobile : SettleBeforePoemVh) / 100) * viewportHeight;
+    const scrollPxPerPoemLine = ((mobile ? ScrollVhPerPoemLineMobile : ScrollVhPerPoemLine) / 100) * viewportHeight;
 
     const starts: number[] = [];
     const poemStarts: number[] = [];

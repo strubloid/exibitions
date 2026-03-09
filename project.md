@@ -316,33 +316,50 @@ A production-ready, containerized, full-stack art exhibition platform for immers
 - Press section NOT shown on individual pages (only on homepage) ✅
 
 ### Phase 20 — Mobile Experience Overhaul
-**Problem:** Real user feedback reports that the mobile experience is frustrating and borderline unusable. Four core complaints:
+**Problem:** Real user feedback reports that the mobile experience is frustrating and borderline unusable.
 
-**Task 1 — Disable or simplify animations on mobile**
+**Task 1 — Disable or simplify animations on mobile** ✅
 - Animations (clip-path transitions, blur pulses, 3D rolls, scale breath) are perceived as "plain annoying" on small screens
-- Reduce or remove GSAP scroll-driven effects on mobile (viewport < 768px)
-- Keep simple opacity cross-fades between artworks instead of cinematic iris transitions
-- Respect `prefers-reduced-motion` more aggressively (currently Phase 16 partially handles this)
+- On mobile (< 768px), uses simple opacity cross-fades instead of cinematic iris transitions
+- Film grain animation disabled on mobile (static, reduced opacity)
+- Vignette softened on mobile to avoid darkening edges excessively
+- `isMobileViewport()` helper + `useSimpleAnimations` flag in Gallery.tsx
 
-**Task 2 — Improve mobile text readability**
-- Text is too small and has too little contrast on mobile devices
-- Increase base font sizes for poem lines, titles, and descriptions on mobile
-- Improve contrast: ensure text meets WCAG AA contrast ratio (4.5:1 minimum)
-- Add stronger text shadows or background overlays behind text on images
-- Review typography across all breakpoints (phones < 480px, tablets < 768px)
+**Task 2 — Improve mobile text readability** ✅
+- Increased font sizes: title (`clamp(1.8rem, 6vw, 2.8rem)`), index (0.75rem), description (0.95rem)
+- Added text shadows on titles and poem lines for contrast over images
+- Stronger info gradient overlay on mobile (92% → 65% → transparent)
+- Boosted opacity on index (55%) and description (65%) text
+- Poem lines: larger on mobile (`clamp(1.1rem, 4vw, 1.6rem)`), selected (`clamp(1.3rem, 5vw, 2rem)`)
 
-**Task 3 — Fix mobile scroll behavior**
-- Scrolling is described as "a huge challenge" — the site "barely works" on mobile
-- Investigate `ScrollTrigger.normalizeScroll(true)` conflicts with native touch scrolling
-- Ensure scroll is smooth and predictable without fighting the user's finger
-- Test snap points on mobile — they may be causing jarring jumps or stuck states
-- Consider disabling scroll snapping on touch devices entirely if it hinders usability
+**Task 3 — Fix mobile scroll behavior** ✅
+- Disabled `ScrollTrigger.normalizeScroll(true)` on mobile — it was fighting native touch scrolling
+- Disabled swipe-to-jump handler on mobile — it was hijacking normal scroll gestures
+- Disabled scroll snapping on poem lines for mobile — snap points caused jarring jumps
+- Reduced scroll distance per poem line on mobile: `ScrollVhPerPoemLineMobile = 4` (vs 8 on desktop)
+- Shortened image transition scroll on mobile: `ImageTransitionScrollVhMobile = 40` (vs 80 on desktop)
+- Shorter settle-before-poem on mobile: `SettleBeforePoemVhMobile = 3` (vs 7 on desktop)
 
-**Task 4 — Allow text selection on poem lines (mobile)**
-- Users cannot highlight/select poem text — attempting to select causes scroll movement
-- Differentiate between scroll gestures and text-selection gestures (e.g., long-press to select vs swipe to scroll)
-- Consider a "tap to pause scroll" mode or a copy button per poem line
-- Ensure `user-select` CSS is not set to `none` on poem text elements
+**Task 4 — Allow text selection on poem lines (mobile)** ✅
+- Enabled `pointer-events: auto` on `.poemWindow` on mobile
+- `.poemLine` already has `user-select: text` and `pointer-events: auto`
+
+**Task 5 — Fix poem text overflow / word clipping** ✅
+- Poem track width reduced from 90% to 76% (desktop) / 74% (mobile) to account for `scale(1.3)` on active line
+- Changed `.poemLine` from `overflow: visible` to `overflow: hidden` with `overflow-wrap: break-word`
+- Added horizontal padding (`0.5em`) to prevent text touching edges
+- Removed `max-width: 70vw/90vw` on selected line — now uses `width: 100%` of parent track (which is already constrained)
+- All text stays within viewport bounds at any scale factor
+
+**Task 6 — Fix grids to 1 column on mobile** ✅
+- Background masonry grid and clippings grid now use `grid-template-columns: 1fr` below 600px
+- Applied in both Exhibitions.module.scss and ExhibitionView.module.scss
+- Above 600px: auto-fit with minmax(240px); above 768px: 3 columns; above 1024px: 4 columns
+
+**Task 7 — Reduce card padding and remove min-height on mobile** ✅
+- Cards (background masonry items + clipping cards) had `padding: 2rem 1.5rem` and `min-height: 140–200px`
+- On mobile (< 600px): reduced to `padding: 1rem` and `min-height: auto` — cards now size to content
+- Applied across all four card classes in Exhibitions.module.scss and ExhibitionView.module.scss
 
 ### Phase 21 — Preloading & Performance
 - Prefetch next artwork image: `<link rel="prefetch">` injected dynamically after current image loads

@@ -249,16 +249,25 @@
   position: absolute;
   top: calc(50% - 45px);   // LINE_H/2 = 45px, so line-0 center aligns to viewport center
   left: 50%;
-  width: 90%;
-  max-width: 90%;              // 78% of viewport width with 11% margin on each side
+  // Width must account for scale(1.3) on the active line:
+  // at 76% width, the scaled line reaches ~99% of viewport (76% × 1.3 = 98.8%)
+  width: 76%;
+  max-width: 76%;
   display: flex;
   flex-direction: column;
   align-items: center;
+
+  @media (max-width: 768px) {
+    // On mobile scale is still 1.3, so 74% × 1.3 ≈ 96% — leaves small safe margin
+    width: 74%;
+    max-width: 74%;
+  }
 }
 
 // Real text line — height must match LINE_H constant in Gallery.tsx (90px)
 .poemLine {
   height: 90px;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -270,7 +279,11 @@
   text-align: center;
   opacity: 0;                  // GSAP drives this at runtime
   white-space: normal;
-  overflow: visible;
+  overflow: hidden;            // prevent text from escaping line bounds
+  overflow-wrap: break-word;
+  word-break: break-word;
+  box-sizing: border-box;
+  padding: 0 0.5em;
   user-select: text;
   pointer-events: auto;
   cursor: text;
@@ -287,21 +300,20 @@
   color: #fff;
   font-size: clamp(1.2rem, 3vw, 3rem);
   letter-spacing: 0.04em;
-  max-width: 70vw;
+  width: 100%;
   margin: 0 auto;
-  padding: 0.3em;
-  background: none;
+  padding: 0.3em 0.5em;
   overflow-wrap: break-word;
   word-break: break-word;
   box-sizing: border-box;
   white-space: normal;
+  overflow: hidden;
   background-color: rgba(97, 11, 134, 0.185);
   border-radius: 30px 0px;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
 
   @media (max-width: 768px) {
     font-size: clamp(1.3rem, 5vw, 2rem);
-    max-width: 90vw;
     background-color: rgba(97, 11, 134, 0.25);
   }
 }
