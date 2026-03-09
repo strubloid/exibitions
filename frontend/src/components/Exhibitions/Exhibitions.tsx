@@ -17,7 +17,44 @@ const ScrollVhPerCardSlide = 30    // vh for card to slide in from off-screen
 const ScrollVhPerCardShimmer = 30  // vh for golden light sweep + brighten
 const ScrollVhPerCard = ScrollVhPerCardSlide + ScrollVhPerCardShimmer
 
+// Mobile: cards animate in rows of 3 — one scroll step reveals a whole row
+const MobileCardsPerRow = 3
+const MobileScrollVhPerRowSlide = 20
+const MobileScrollVhPerRowShimmer = 15
+const MobileScrollVhPerRow = MobileScrollVhPerRowSlide + MobileScrollVhPerRowShimmer
+const MobileSettleVhBeforeCards = 10
+
+function isMobileCards(): boolean {
+  return typeof window !== 'undefined' && window.innerWidth < 768
+}
+
 function calculateCardScrollPositions(cardCount: number, viewportHeight: number) {
+  const mobile = isMobileCards()
+
+  if (mobile) {
+    // Group cards into rows of 3 — each row shares the same scroll timing
+    const rowCount = Math.ceil(cardCount / MobileCardsPerRow)
+    const settlePx = (MobileSettleVhBeforeCards / 100) * viewportHeight
+    const pxPerRow = (MobileScrollVhPerRow / 100) * viewportHeight
+    const pxPerRowSlide = (MobileScrollVhPerRowSlide / 100) * viewportHeight
+
+    const slideStarts: number[] = []
+    const slideEnds: number[] = []
+    const shimmerEnds: number[] = []
+
+    for (let cardIndex = 0; cardIndex < cardCount; cardIndex++) {
+      const rowIndex = Math.floor(cardIndex / MobileCardsPerRow)
+      const rowStart = settlePx + rowIndex * pxPerRow
+      slideStarts.push(rowStart)
+      slideEnds.push(rowStart + pxPerRowSlide)
+      shimmerEnds.push(rowStart + pxPerRow)
+    }
+
+    const totalPx = viewportHeight + settlePx + rowCount * pxPerRow + viewportHeight * 0.1
+    return { slideStarts, slideEnds, shimmerEnds, totalPx }
+  }
+
+  // Desktop: one card per scroll step
   const settlePx = (SettleVhBeforeCards / 100) * viewportHeight
   const pxPerCard = (ScrollVhPerCard / 100) * viewportHeight
   const pxPerSlide = (ScrollVhPerCardSlide / 100) * viewportHeight

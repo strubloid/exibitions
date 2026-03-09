@@ -336,8 +336,8 @@
 
 .backgroundMasonryGrid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
   width: 100%;
   overflow: hidden;
 
@@ -376,7 +376,7 @@
   &:nth-child(4n+1) { min-height: 200px; }
 
   @media (max-width: 600px) {
-    padding: 1rem 1rem;
+    padding: 0.6rem 0.5rem;
     min-height: auto;
 
     &:nth-child(1),
@@ -399,6 +399,11 @@
   font-weight: 300;
   position: relative;
   z-index: 1;
+
+  @media (max-width: 600px) {
+    font-size: 0.7rem;
+    line-height: 1.5;
+  }
 }
 
 // ─── Golden light sweep beam (GSAP animates xPercent -100 → 100) ──────────────
@@ -511,8 +516,8 @@
 
 .clippingsGrid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
   width: 100%;
 
   @media (min-width: 600px) {
@@ -550,7 +555,7 @@
   &:nth-child(4n+1) { min-height: 200px; }
 
   @media (max-width: 600px) {
-    padding: 1rem 1rem;
+    padding: 0.6rem 0.5rem;
     min-height: auto;
 
     &:nth-child(1),

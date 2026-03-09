@@ -361,6 +361,14 @@ A production-ready, containerized, full-stack art exhibition platform for immers
 - On mobile (< 600px): reduced to `padding: 1rem` and `min-height: auto` — cards now size to content
 - Applied across all four card classes in Exhibitions.module.scss and ExhibitionView.module.scss
 
+**Task 8 — Redesign mobile background section: horizontal 3-per-row cards** ✅
+- Grids now use `grid-template-columns: repeat(3, 1fr)` below 600px (was single column)
+- GSAP scroll animation groups cards by row of 3 — all 3 cards in a row share the same scroll timing
+- Mobile scroll per row: 20vh slide + 15vh shimmer (vs 30+30 per individual card on desktop)
+- Mobile settle before cards: 10vh (vs 20vh desktop)
+- Card padding reduced to `0.6rem 0.5rem` and text to `0.7rem` on mobile for compact display
+- Applied to both Exhibitions.tsx/scss and ExhibitionView.tsx/scss
+
 ### Phase 21 — Preloading & Performance
 - Prefetch next artwork image: `<link rel="prefetch">` injected dynamically after current image loads
 - Intersection Observer to mount/unmount distant layers (> ±2 from active)
