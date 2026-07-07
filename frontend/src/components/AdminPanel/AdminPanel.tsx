@@ -65,7 +65,7 @@ export default function AdminPanel() {
 
   // ── Artworks CRUD ──────────────────────────────────────────────────────────
   const fetchArtworks = useCallback(async () => {
-    const res = await fetch('/api/artworks')
+    const res = await fetch('/api/admin/artworks', { headers: authHeaders })
     setArtworks(await res.json())
   }, [])
 

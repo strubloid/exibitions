@@ -1,722 +1,757 @@
 // ─── Container ────────────────────────────────────────────────────────────────
 .container {
-  background: #000;
+    background: #000;
 }
 
 // ─── Full-viewport section ────────────────────────────────────────────────────
 .section {
-  position: relative;
-  height: 100vh;
-  overflow: hidden;
+    position: relative;
+    height: 100vh;
+    overflow: hidden;
 
-  // Subtle divider between sections
-  & + & {
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-  }
+    // Subtle divider between sections
+    & + & {
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
 }
 
 // ─── Anchor covers the entire section ────────────────────────────────────────
 .link {
-  position: absolute;
-  inset: 0;
-  display: block;
-  text-decoration: none;
-  color: inherit;
+    position: absolute;
+    inset: 0;
+    display: block;
+    text-decoration: none;
+    color: inherit;
 
-  &:hover .imageWrap {
-    transform: scale(1.025);
-  }
+    &:hover .imageWrap {
+        transform: scale(1.025);
+    }
 
-  &:hover .cta {
-    color: rgba(255, 255, 255, 0.95);
-    border-color: rgba(255, 255, 255, 0.6);
-    letter-spacing: 0.35em;
-  }
+    &:hover .cta {
+        color: rgba(255, 255, 255, 0.95);
+        border-color: rgba(255, 255, 255, 0.6);
+        letter-spacing: 0.35em;
+    }
 }
 
 // ─── Image wrapper — extra vertical space for parallax travel ─────────────────
 .imageWrap {
-  position: absolute;
-  inset: -15% 0;
-  will-change: transform;
-  transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    position: absolute;
+    inset: -15% 0;
+    will-change: transform;
+    transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-  user-select: none;
-  pointer-events: none;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    user-select: none;
+    pointer-events: none;
 }
 
 // ─── Placeholder when no cover image ─────────────────────────────────────────
 .placeholder {
-  width: 100%;
-  height: 100%;
-  background: #0d0d0d;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    width: 100%;
+    height: 100%;
+    background: #0d0d0d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-  span {
-    font-size: 35vw;
-    font-weight: 700;
-    color: rgba(255, 255, 255, 0.03);
-    user-select: none;
-  }
+    span {
+        font-size: 35vw;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.03);
+        user-select: none;
+    }
 }
 
 // ─── Overlay: gradient + text ─────────────────────────────────────────────────
 .overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 3rem 4rem;
-  background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.88) 0%,
-    rgba(0, 0, 0, 0.15) 55%,
-    transparent 100%
-  );
-  pointer-events: none;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 3rem 4rem;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.15) 55%, transparent 100%);
+    pointer-events: none;
 
-  @media (max-width: 600px) {
-    padding: 2rem 1.75rem;
-  }
+    @media (max-width: 600px) {
+        padding: 2rem 1.75rem;
+    }
 }
 
 // ─── Index counter (top-right) ────────────────────────────────────────────────
 .index {
-  align-self: flex-end;
-  font-size: 0.65rem;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.28);
-  font-weight: 400;
+    align-self: flex-end;
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.28);
+    font-weight: 400;
 }
 
 // ─── Bottom row: name/desc left, CTA right ───────────────────────────────────
 .overlayBottom {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 2rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
 }
 
 .overlayLeft {
-  flex: 1;
-  min-width: 0;
+    flex: 1;
+    min-width: 0;
 }
 
 .name {
-  margin: 0 0 0.8rem;
-  font-size: clamp(2.2rem, 6vw, 5.5rem);
-  font-weight: 300;
-  letter-spacing: 0.02em;
-  color: #fff;
-  line-height: 1.0;
-  max-width: 16ch;
+    margin: 0 0 0.8rem;
+    font-size: clamp(2.2rem, 6vw, 5.5rem);
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    color: #fff;
+    line-height: 1;
+    max-width: 16ch;
 
-  @media (max-width: 768px) {
-    font-size: clamp(1.8rem, 5vw, 3.5rem);
-    max-width: 14ch;
-    margin: 0 0 0.6rem;
-  }
+    @media (max-width: 768px) {
+        font-size: clamp(1.8rem, 5vw, 3.5rem);
+        max-width: 14ch;
+        margin: 0 0 0.6rem;
+    }
 }
 
 .description {
-  margin: 0;
-  font-size: clamp(0.8rem, 1.2vw, 1rem);
-  color: rgba(255, 255, 255, 0.4);
-  max-width: 44ch;
-  line-height: 1.65;
-  font-weight: 300;
+    margin: 0;
+    font-size: clamp(0.8rem, 1.2vw, 1rem);
+    color: rgba(255, 255, 255, 0.4);
+    max-width: 44ch;
+    line-height: 1.65;
+    font-weight: 300;
 
-  @media (max-width: 768px) {
-    max-width: 32ch;
-    font-size: clamp(0.7rem, 1vw, 0.9rem);
-  }
+    @media (max-width: 768px) {
+        max-width: 32ch;
+        font-size: clamp(0.7rem, 1vw, 0.9rem);
+    }
 
-  @media (max-width: 480px) {
-    display: none;
-  }
+    @media (max-width: 480px) {
+        display: none;
+    }
 }
 
 // ─── Bottom-right action cluster ─────────────────────────────────────────────
 .overlayActions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.7rem;
-  flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7rem;
+    flex-shrink: 0;
 
-  @media (max-width: 768px) {
-    gap: 0.5rem;
-  }
+    @media (max-width: 768px) {
+        gap: 0.5rem;
+    }
 }
 
 .sectionBtn {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: rgba(255, 255, 255, 0.42);
-  font-size: 0.68rem;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  padding: 0.65rem 1.1rem;
-  cursor: pointer;
-  font-family: inherit;
-  white-space: nowrap;
-  transition: color 0.25s, border-color 0.25s;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: rgba(255, 255, 255, 0.42);
+    font-size: 0.68rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    padding: 0.65rem 1.1rem;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    transition:
+        color 0.25s,
+        border-color 0.25s;
 
-  &:hover {
-    color: rgba(255, 255, 255, 0.85);
-    border-color: rgba(255, 255, 255, 0.45);
-  }
+    &:hover {
+        color: rgba(255, 255, 255, 0.85);
+        border-color: rgba(255, 255, 255, 0.45);
+    }
 
-  @media (max-width: 768px) {
-    font-size: 0.58rem;
-    padding: 0.5rem 0.9rem;
-    letter-spacing: 0.2em;
-  }
+    @media (max-width: 768px) {
+        font-size: 0.58rem;
+        padding: 0.5rem 0.9rem;
+        letter-spacing: 0.2em;
+    }
 
-  @media (max-width: 480px) {
-    display: none;
-  }
+    @media (max-width: 480px) {
+        display: none;
+    }
 }
 
 // ─── CTA (bottom-right, more prominent) ──────────────────────────────────────
 .cta {
-  flex-shrink: 0;
-  font-size: 0.72rem;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.32);
-  padding: 0.72rem 1.3rem;
-  white-space: nowrap;
-  transition: color 0.4s, letter-spacing 0.4s, border-color 0.4s;
+    flex-shrink: 0;
+    font-size: 0.72rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    padding: 0.72rem 1.3rem;
+    white-space: nowrap;
+    transition:
+        color 0.4s,
+        letter-spacing 0.4s,
+        border-color 0.4s;
 
-  .link:hover & {
-    color: rgba(255, 255, 255, 0.95);
-    border-color: rgba(255, 255, 255, 0.6);
-    letter-spacing: 0.35em;
-  }
+    .link:hover & {
+        color: rgba(255, 255, 255, 0.95);
+        border-color: rgba(255, 255, 255, 0.6);
+        letter-spacing: 0.35em;
+    }
 
-  @media (max-width: 768px) {
-    font-size: 0.62rem;
-    padding: 0.6rem 1rem;
-    letter-spacing: 0.2em;
-  }
+    @media (max-width: 768px) {
+        font-size: 0.62rem;
+        padding: 0.6rem 1rem;
+        letter-spacing: 0.2em;
+    }
 
-  @media (max-width: 480px) {
-    display: none;
-  }
+    @media (max-width: 480px) {
+        display: none;
+    }
 }
 
 // ─── Fixed scroll-to-top button ───────────────────────────────────────────────
 .scrollTopBtn {
-  position: fixed;
-  bottom: 2.5rem;
-  right: 2rem;
-  z-index: 50;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.28);
-  width: 2.5rem;
-  height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 0.95rem;
-  font-family: inherit;
-  transition: color 0.2s, border-color 0.2s;
+    position: fixed;
+    bottom: 3rem;
+    right: 1.1rem;
+    z-index: 50;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.28);
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition:
+        color 0.2s,
+        border-color 0.2s;
 
-  &:hover {
-    color: rgba(255, 255, 255, 0.75);
-    border-color: rgba(255, 255, 255, 0.42);
-  }
+    &:hover {
+        color: rgba(255, 255, 255, 0.75);
+        border-color: rgba(255, 255, 255, 0.42);
+    }
 
-  @media (max-width: 768px) {
-    bottom: 1.75rem;
-    right: 1.5rem;
-    width: 2.2rem;
-    height: 2.2rem;
-    font-size: 0.85rem;
-  }
+    @media (max-width: 768px) {
+        bottom: 1.75rem;
+        right: 1.5rem;
+        width: 2.2rem;
+        height: 2.2rem;
+        font-size: 0.85rem;
+    }
 
-  @media (max-width: 600px) {
-    bottom: 1.5rem;
-    right: 1.5rem;
-    width: 2rem;
-    height: 2rem;
-    font-size: 0.8rem;
-  }
+    @media (max-width: 600px) {
+        bottom: 1.5rem;
+        right: 1.5rem;
+        width: 2rem;
+        height: 2rem;
+        font-size: 0.8rem;
+    }
 }
 
 // ─── Loading ──────────────────────────────────────────────────────────────────
 .loading {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #000;
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
 
-  span {
-    font-size: 0.7rem;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.2);
-    animation: pulse 1.4s ease-in-out infinite;
-  }
+    span {
+        font-size: 0.7rem;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.2);
+        animation: pulse 1.4s ease-in-out infinite;
+    }
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 0.2; }
-  50%       { opacity: 0.6; }
+    0%,
+    100% {
+        opacity: 0.2;
+    }
+    50% {
+        opacity: 0.6;
+    }
 }
 
 // ─── Sticky wrappers (same Gallery-pattern as ExhibitionView) ─────────────────
 .bgSticky {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  overflow: hidden;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow: hidden;
 }
 
 .clippingSticky {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  overflow: hidden;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow: hidden;
 }
 
 // ─── Background section ────────────────────────────────────────────────────────
 .backgroundSection {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 6rem 3rem;
-  transition: background-color 0.6s ease;
-  position: relative;
-  overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6rem 3rem;
+    transition: background-color 0.6s ease;
+    position: relative;
+    overflow: hidden;
 
-  @media (max-width: 768px) {
-    padding: 4rem 2rem;
-  }
+    @media (max-width: 768px) {
+        padding: 4rem 2rem;
+    }
 }
 
 .backgroundTitle {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  font-size: clamp(4rem, 15vw, 9rem);
-  font-weight: 200;
-  letter-spacing: -0.02em;
-  color: rgba(255, 255, 255, 0.04);
-  text-transform: uppercase;
-  margin: 0;
-  line-height: 0.9;
-  padding: 2rem 3rem;
-  pointer-events: none;
-  word-wrap: break-word;
-  overflow: hidden;
-  text-overflow: ellipsis;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    font-size: clamp(4rem, 15vw, 9rem);
+    font-weight: 200;
+    letter-spacing: -0.02em;
+    color: rgba(255, 255, 255, 0.04);
+    text-transform: uppercase;
+    margin: 0;
+    line-height: 0.9;
+    padding: 2rem 3rem;
+    pointer-events: none;
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
-  @media (max-width: 768px) {
-    font-size: clamp(2.5rem, 10vw, 5rem);
-    padding: 1.5rem 1.5rem;
-  }
+    @media (max-width: 768px) {
+        font-size: clamp(2.5rem, 10vw, 5rem);
+        padding: 1.5rem 1.5rem;
+    }
 }
 
 .backgroundLabel {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  font-size: clamp(4rem, 15vw, 12rem);
-  font-weight: 200;
-  letter-spacing: -0.02em;
-  color: rgba(255, 255, 255, 0.04);
-  text-transform: uppercase;
-  margin: 0;
-  line-height: 0.9;
-  padding: 2rem 3rem;
-  pointer-events: none;
-  word-wrap: break-word;
-  overflow: hidden;
-  text-overflow: ellipsis;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    font-size: clamp(4rem, 15vw, 12rem);
+    font-weight: 200;
+    letter-spacing: -0.02em;
+    color: rgba(255, 255, 255, 0.04);
+    text-transform: uppercase;
+    margin: 0;
+    line-height: 0.9;
+    padding: 2rem 3rem;
+    pointer-events: none;
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
-  @media (max-width: 768px) {
-    font-size: clamp(2.5rem, 10vw, 5rem);
-    padding: 1.5rem 1.5rem;
-  }
+    @media (max-width: 768px) {
+        font-size: clamp(2.5rem, 10vw, 5rem);
+        padding: 1.5rem 1.5rem;
+    }
 }
 
 .backgroundContent {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  // max-width: 1200px;
-  max-width: 1580px;
-  margin-top: 1rem;
-
-  // for mobile
-  @media (max-width: 767px) {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    // max-width: 1200px;
+    max-width: 1580px;
     margin-top: 1rem;
-    max-width: 100%;
-  }
-  // for tablet
-  @media (min-width: 768px) {
-    margin-top: 2rem;
-    max-width: 100%;
-  }
 
-  // for desktop
-  @media (min-width: 1024px) {
-    margin-top: 3rem;
-    max-width: 1200px;
-  }
+    // for mobile
+    @media (max-width: 767px) {
+        margin-top: 1rem;
+        max-width: 100%;
+    }
+    // for tablet
+    @media (min-width: 768px) {
+        margin-top: 2rem;
+        max-width: 100%;
+    }
+
+    // for desktop
+    @media (min-width: 1024px) {
+        margin-top: 3rem;
+        max-width: 1200px;
+    }
 }
 
 .backgroundMasonryGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-  width: 100%;
-
-  @media (min-width: 600px) {
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 2rem;
-  }
-
-  @media (min-width: 768px) {
+    display: grid;
     grid-template-columns: repeat(3, 1fr);
-  }
+    gap: 0.75rem;
+    width: 100%;
 
-  @media (min-width: 1024px) {
-    grid-template-columns: repeat(4, 1fr);
-  }
+    @media (min-width: 600px) {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 2rem;
+    }
+
+    @media (min-width: 768px) {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    @media (min-width: 1024px) {
+        grid-template-columns: repeat(4, 1fr);
+    }
 }
 
 .backgroundMasonryItem {
-  position: relative;
-  overflow: hidden;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 2rem 1.5rem;
-  border-radius: 4px;
-  transition: background 0.3s ease, border-color 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 140px;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 2rem 1.5rem;
+    border-radius: 4px;
+    transition:
+        background 0.3s ease,
+        border-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 140px;
 
-  &:nth-child(1) { min-height: 160px; }
-  &:nth-child(2) { min-height: 140px; }
-  &:nth-child(3) { min-height: 180px; }
-  &:nth-child(4n+1) { min-height: 200px; }
+    &:nth-child(1) {
+        min-height: 160px;
+    }
+    &:nth-child(2) {
+        min-height: 140px;
+    }
+    &:nth-child(3) {
+        min-height: 180px;
+    }
+    &:nth-child(4n + 1) {
+        min-height: 200px;
+    }
 
-  @media (max-width: 600px) {
-    padding: 0.6rem 0.5rem;
-    min-height: auto;
-    &:nth-child(1),
-    &:nth-child(2),
-    &:nth-child(3),
-    &:nth-child(4n+1) { min-height: auto; }
-  }
+    @media (max-width: 600px) {
+        padding: 0.6rem 0.5rem;
+        min-height: auto;
+        &:nth-child(1),
+        &:nth-child(2),
+        &:nth-child(3),
+        &:nth-child(4n + 1) {
+            min-height: auto;
+        }
+    }
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.15);
-  }
+    &:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
 }
 
 .backgroundText {
-  margin: 0;
-  font-size: clamp(1.1rem, 2.8vw, 1.8rem);
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.85;
-  font-weight: 300;
-  position: relative;
-  z-index: 1;
+    margin: 0;
+    font-size: clamp(1.1rem, 2.8vw, 1.8rem);
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.85;
+    font-weight: 300;
+    position: relative;
+    z-index: 1;
 
-  @media (max-width: 600px) {
-    font-size: 0.7rem;
-    line-height: 1.5;
-  }
+    @media (max-width: 600px) {
+        font-size: 0.7rem;
+        line-height: 1.5;
+    }
 }
 
 // ─── Golden light sweep beam (GSAP animates xPercent -100 → 100) ──────────────
 .cardShimmer {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    105deg,
-    transparent 0%,
-    transparent 25%,
-    rgba(255, 190, 30, 0.12) 35%,
-    rgba(255, 220, 80, 0.65) 46%,
-    rgba(255, 250, 180, 0.95) 50%,
-    rgba(255, 220, 80, 0.65) 54%,
-    rgba(255, 190, 30, 0.12) 65%,
-    transparent 75%,
-    transparent 100%
-  );
-  pointer-events: none;
-  z-index: 2;
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        105deg,
+        transparent 0%,
+        transparent 25%,
+        rgba(255, 190, 30, 0.12) 35%,
+        rgba(255, 220, 80, 0.65) 46%,
+        rgba(255, 250, 180, 0.95) 50%,
+        rgba(255, 220, 80, 0.65) 54%,
+        rgba(255, 190, 30, 0.12) 65%,
+        transparent 75%,
+        transparent 100%
+    );
+    pointer-events: none;
+    z-index: 2;
 }
 
 // ─── Clippings section ─────────────────────────────────────────────────────────
 .clippingsSection {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 6rem 3rem;
-  transition: background-color 0.6s ease;
-  position: relative;
-  overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6rem 3rem;
+    transition: background-color 0.6s ease;
+    position: relative;
+    overflow: hidden;
 
-  @media (max-width: 768px) {
-    padding: 4rem 2rem;
-  }
+    @media (max-width: 768px) {
+        padding: 4rem 2rem;
+    }
 }
 
 .clippingsTitle {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  font-size: clamp(4rem, 15vw, 9rem);
-  font-weight: 200;
-  letter-spacing: -0.02em;
-  color: rgba(255, 255, 255, 0.04);
-  text-transform: uppercase;
-  margin: 0;
-  line-height: 0.9;
-  padding: 2rem 3rem;
-  pointer-events: none;
-  word-wrap: break-word;
-  overflow: hidden;
-  text-overflow: ellipsis;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    font-size: clamp(4rem, 15vw, 9rem);
+    font-weight: 200;
+    letter-spacing: -0.02em;
+    color: rgba(255, 255, 255, 0.04);
+    text-transform: uppercase;
+    margin: 0;
+    line-height: 0.9;
+    padding: 2rem 3rem;
+    pointer-events: none;
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
-  @media (max-width: 768px) {
-    font-size: clamp(2.5rem, 10vw, 5rem);
-    padding: 1.5rem 1.5rem;
-  }
+    @media (max-width: 768px) {
+        font-size: clamp(2.5rem, 10vw, 5rem);
+        padding: 1.5rem 1.5rem;
+    }
 }
 
 .clippingsLabel {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  font-size: clamp(4rem, 15vw, 12rem);
-  font-weight: 200;
-  letter-spacing: -0.02em;
-  color: rgba(255, 255, 255, 0.04);
-  text-transform: uppercase;
-  margin: 0;
-  line-height: 0.9;
-  padding: 2rem 3rem;
-  pointer-events: none;
-  word-wrap: break-word;
-  overflow: hidden;
-  text-overflow: ellipsis;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    font-size: clamp(4rem, 15vw, 12rem);
+    font-weight: 200;
+    letter-spacing: -0.02em;
+    color: rgba(255, 255, 255, 0.04);
+    text-transform: uppercase;
+    margin: 0;
+    line-height: 0.9;
+    padding: 2rem 3rem;
+    pointer-events: none;
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
-  @media (max-width: 768px) {
-    font-size: clamp(2.5rem, 10vw, 5rem);
-    padding: 1.5rem 1.5rem;
-  }
+    @media (max-width: 768px) {
+        font-size: clamp(2.5rem, 10vw, 5rem);
+        padding: 1.5rem 1.5rem;
+    }
 }
 
 .clippingsContent {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 1200px;
-  margin-top: 1rem;
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 1200px;
+    margin-top: 1rem;
 
-  @media (min-width: 768px) {
-    margin-top: 2rem;
-  }
+    @media (min-width: 768px) {
+        margin-top: 2rem;
+    }
 
-  @media (min-width: 1024px) {
-    margin-top: 3rem;
-  }
+    @media (min-width: 1024px) {
+        margin-top: 3rem;
+    }
 }
 
 .clippingsGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-  width: 100%;
-
-  @media (min-width: 600px) {
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 2rem;
-  }
-
-  @media (min-width: 768px) {
+    display: grid;
     grid-template-columns: repeat(3, 1fr);
-  }
+    gap: 0.75rem;
+    width: 100%;
 
-  @media (min-width: 1024px) {
-    grid-template-columns: repeat(4, 1fr);
-  }
+    @media (min-width: 600px) {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 2rem;
+    }
+
+    @media (min-width: 768px) {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    @media (min-width: 1024px) {
+        grid-template-columns: repeat(4, 1fr);
+    }
 }
 
 .clippingCard {
-  position: relative;
-  overflow: hidden;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 2rem 1.5rem;
-  border-radius: 4px;
-  transition: background 0.3s ease, border-color 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 140px;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 2rem 1.5rem;
+    border-radius: 4px;
+    transition:
+        background 0.3s ease,
+        border-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 140px;
 
-  &:nth-child(1) { min-height: 160px; }
-  &:nth-child(2) { min-height: 140px; }
-  &:nth-child(3) { min-height: 180px; }
-  &:nth-child(4n+1) { min-height: 200px; }
+    &:nth-child(1) {
+        min-height: 160px;
+    }
+    &:nth-child(2) {
+        min-height: 140px;
+    }
+    &:nth-child(3) {
+        min-height: 180px;
+    }
+    &:nth-child(4n + 1) {
+        min-height: 200px;
+    }
 
-  @media (max-width: 600px) {
-    padding: 0.6rem 0.5rem;
-    min-height: auto;
-    &:nth-child(1),
-    &:nth-child(2),
-    &:nth-child(3),
-    &:nth-child(4n+1) { min-height: auto; }
-  }
+    @media (max-width: 600px) {
+        padding: 0.6rem 0.5rem;
+        min-height: auto;
+        &:nth-child(1),
+        &:nth-child(2),
+        &:nth-child(3),
+        &:nth-child(4n + 1) {
+            min-height: auto;
+        }
+    }
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.15);
-  }
+    &:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
 }
 
 .clippingImageContainer {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background: #111;
-  position: absolute;
-  inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #111;
+    position: absolute;
+    inset: 0;
 }
 
 .clippingImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  opacity: 0.85;
-  transition: opacity 0.3s;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 0.85;
+    transition: opacity 0.3s;
 
-  .clippingCard:hover & {
-    opacity: 1;
-  }
+    .clippingCard:hover & {
+        opacity: 1;
+    }
 }
 
 .clippingCardDetails {
-  position: relative;
-  z-index: 3;
-  padding: 1.25rem 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  flex: 1;
-  text-align: center;
+    position: relative;
+    z-index: 3;
+    padding: 1.25rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+    text-align: center;
 }
 
 .clippingTitle {
-  margin: 0;
-  font-size: clamp(1.1rem, 2.8vw, 1.8rem);
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.85;
-  font-weight: 300;
+    margin: 0;
+    font-size: clamp(1.1rem, 2.8vw, 1.8rem);
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.85;
+    font-weight: 300;
 }
 
 // ─── Modal ────────────────────────────────────────────────────────────────────
 .modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.95);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 2rem;
-  animation: fadeIn 0.3s ease;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 2rem;
+    animation: fadeIn 0.3s ease;
 
-  @media (max-width: 768px) {
-    padding: 1rem;
-  }
+    @media (max-width: 768px) {
+        padding: 1rem;
+    }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 .modalContent {
-  position: relative;
-  max-width: 90vw;
-  max-height: 90vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .modalImage {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-  max-width: 90vw;
-  max-height: 85vh;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    max-width: 90vw;
+    max-height: 85vh;
 }
 
 .modalClose {
-  position: absolute;
-  top: -2.5rem;
-  right: 0;
-  background: transparent;
-  border: none;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 2rem;
-  cursor: pointer;
-  transition: color 0.2s;
-  padding: 0;
-  width: 2.5rem;
-  height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &:hover {
-    color: rgba(255, 255, 255, 0.9);
-  }
-
-  @media (max-width: 768px) {
-    top: -2rem;
+    position: absolute;
+    top: -2.5rem;
     right: 0;
-    font-size: 1.5rem;
-    width: 2rem;
-    height: 2rem;
-  }
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 2rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    @media (max-width: 768px) {
+        top: -2rem;
+        right: 0;
+        font-size: 1.5rem;
+        width: 2rem;
+        height: 2rem;
+    }
 }

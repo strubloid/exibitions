@@ -19,7 +19,16 @@ class OrderController extends Controller
 
         $orders = $query->with('items')->paginate(25);
 
-        return response()->json($orders);
+        // Shape matches the AdminOrders frontend contract:
+        // { data: OrderResource[], current_page, last_page, total, per_page }
+        // Wrapped in OrderResource so we control field exposure (e.g. PI fields).
+        return response()->json([
+            'data'         => OrderResource::collection($orders->items()),
+            'current_page' => $orders->currentPage(),
+            'last_page'    => $orders->lastPage(),
+            'per_page'     => $orders->perPage(),
+            'total'        => $orders->total(),
+        ]);
     }
 
     public function show(Order $order): JsonResponse

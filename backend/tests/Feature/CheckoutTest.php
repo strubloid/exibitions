@@ -74,7 +74,7 @@ class CheckoutTest extends TestCase
         $res = $this->postJson('/api/checkout/session', [
             'items'     => [],
             'customer'  => ['email' => 'a@b.com', 'name' => 'X', 'shipping' => ['line1' => '1', 'city' => 'x', 'postal_code' => '1', 'country' => 'US']],
-            'success_url' => 'http://localhost:5173/checkout/success?session_id={CHECKOUT_SESSION_ID}',
+            'success_url' => 'http://localhost/checkout/success?session_id={CHECKOUT_SESSION_ID}',
         ]);
 
         $res->assertStatus(422);
@@ -88,7 +88,7 @@ class CheckoutTest extends TestCase
         $res = $this->postJson('/api/checkout/session', [
             'items'     => [['artwork_id' => $artwork->id]],
             'customer'  => ['email' => 'a@b.com', 'name' => 'X', 'shipping' => ['line1' => '1', 'city' => 'x', 'postal_code' => '1', 'country' => 'ZZ']],
-            'success_url' => 'http://localhost:5173/checkout/success?session_id={CHECKOUT_SESSION_ID}',
+            'success_url' => 'http://localhost/checkout/success?session_id={CHECKOUT_SESSION_ID}',
         ]);
 
         $res->assertStatus(422);
@@ -97,7 +97,7 @@ class CheckoutTest extends TestCase
 
     public function test_checkout_with_open_redirect_url_fails_validation(): void
     {
-        config(['app.frontend_url' => 'http://localhost:5173']);
+        // APP_URL default is http://localhost — success_url must start with it.
         $artwork = Artwork::factory()->create(['price_cents' => 100, 'currency' => 'USD', 'is_available' => true]);
 
         $res = $this->postJson('/api/checkout/session', [

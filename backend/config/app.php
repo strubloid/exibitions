@@ -60,9 +60,10 @@ return [
     |--------------------------------------------------------------------------
     | Used by StoreCheckoutRequest to validate that success_url starts with
     | the configured frontend origin, and by CheckoutController to build the
-    | cancel_url. Keep in sync with the public URL your frontend is served on.
+    | cancel_url. Falls back to APP_URL — in the nginx-fronted setup frontend
+    | and backend share an origin, so FRONTEND_URL is not needed.
     */
-    'frontend_url' => env('FRONTEND_URL', 'http://localhost:5173'),
+    'frontend_url' => env('FRONTEND_URL', env('APP_URL', 'http://localhost')),
 
     /*
     |--------------------------------------------------------------------------

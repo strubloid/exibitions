@@ -7,6 +7,7 @@ use App\Models\Order;
 use Illuminate\Support\Arr;
 use RuntimeException;
 use Stripe\Checkout\Session;
+use Stripe\Exception\ApiErrorException;
 use Stripe\Exception\SignatureVerificationException;
 use Stripe\Exception\UnexpectedValueException;
 use Stripe\Stripe;
@@ -32,18 +33,27 @@ final class StripeGateway implements PaymentGateway
             'quantity'   => 1,
         ])->all();
 
-        $session = Session::create([
-            'mode'               => 'payment',
-            'line_items'         => $lineItems,
-            'customer_email'     => $order->customer_email,
-            'success_url'        => $successUrl,
-            'cancel_url'         => $cancelUrl,
-            'client_reference_id'=> $order->order_number,
-            'metadata'           => [
-                'order_number' => $order->order_number,
-                'order_id'     => (string) $order->id,
-            ],
-        ]);
+        try {
+            $session = Session::create([
+                'mode'               => 'payment',
+                'line_items'         => $lineItems,
+                'customer_email'     => $order->customer_email,
+                'success_url'        => $successUrl,
+                'cancel_url'         => $cancelUrl,
+                'client_reference_id'=> $order->order_number,
+                'metadata'           => [
+                    'order_number' => $order->order_number,
+                    'order_id'     => (string) $order->id,
+                ],
+            ]);
+        } catch (ApiErrorException $e) {
+            // Translate Stripe's exception hierarchy into RuntimeException so the
+            // controller's catch clause triggers the order-cancellation+restore path.
+            // Without this, ApiErrorException (which extends \Exception, NOT RuntimeException)
+            // would bypass the catch (RuntimeException) and leave the order pending + the
+            // artwork stuck unavailable.
+            throw new RuntimeException('Stripe createCheckoutSession failed: ' . $e->getMessage(), 0, $e);
+        }
 
         return [
             'session_id' => $session->id,
@@ -53,7 +63,11 @@ final class StripeGateway implements PaymentGateway
 
     public function retrieveSession(string $sessionId): array
     {
-        $session = Session::retrieve($sessionId);
+        try {
+            $session = Session::retrieve($sessionId);
+        } catch (ApiErrorException $e) {
+            throw new RuntimeException('Stripe retrieveSession failed: ' . $e->getMessage(), 0, $e);
+        }
 
         return [
             'id'              => $session->id,

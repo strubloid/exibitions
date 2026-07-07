@@ -33,7 +33,15 @@ class StoreCheckoutRequest extends FormRequest
                 }
             }],
             'customer.shipping.state'   => ['nullable', 'string', 'max:120'],
-            'success_url'               => ['required', 'url', function ($attribute, $value, $fail) {
+            'success_url'               => ['required', 'string', 'max:2048', function ($attribute, $value, $fail) {
+                // Stripe substitutes {CHECKOUT_SESSION_ID} into success_url after the buyer pays.
+                // The Laravel 'url' validator rejects that placeholder, so validate manually:
+                // strip the placeholder, then check the result is a valid URL.
+                $candidate = str_replace('{CHECKOUT_SESSION_ID}', 'CS_TEST', $value);
+                if (filter_var($candidate, FILTER_VALIDATE_URL) === false) {
+                    $fail('The success url field must be a valid URL.');
+                    return;
+                }
                 $expected = rtrim(config('app.frontend_url'), '/') . '/';
                 if (!str_starts_with($value, $expected)) {
                     $fail('success_url must start with the frontend origin.');
