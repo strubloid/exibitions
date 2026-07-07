@@ -1,0 +1,120 @@
+.wrap {
+  min-height: 100vh;
+  background: #0a0a0a;
+  color: rgba(255, 255, 255, 0.92);
+  padding: 5rem 2rem 3rem;
+}
+
+.heading {
+  font-size: 0.85rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  font-weight: 300;
+  margin-bottom: 2rem;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.select {
+  padding: 0.5rem 0.8rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-family: inherit;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.th, .td {
+  padding: 0.65rem 0.8rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.th {
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.td { color: rgba(255, 255, 255, 0.85); }
+
+.badge {
+  display: inline-flex;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.badgePending   { background: rgba(255, 200, 100, 0.18); color: rgb(255, 220, 150); }
+.badgePaid      { background: rgba(120, 200, 120, 0.18); color: rgb(180, 240, 180); }
+.badgeFulfilled { background: rgba(100, 220, 200, 0.18); color: rgb(180, 240, 230); }
+.badgeCancelled { background: rgba(255, 100, 100, 0.18); color: rgb(255, 180, 180); }
+.badgeRefunded  { background: rgba(200, 200, 200, 0.18); color: rgb(220, 220, 220); }
+
+.pagination {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+
+  button {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.8);
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    &:disabled { opacity: 0.4; cursor: not-allowed; }
+    &:hover:not(:disabled) { border-color: rgba(255, 255, 255, 0.4); }
+  }
+}
+
+.error {
+  color: rgba(255, 140, 140, 0.9);
+  font-size: 0.8rem;
+}
+
+.backLink {
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  &:hover { color: rgba(255, 255, 255, 0.85); }
+}
+
+.detail {
+  margin-top: 2rem;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.detailRow {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 0.6rem;
+  padding: 0.35rem 0;
+  font-size: 0.8rem;
+
+  th { font-weight: 400; color: rgba(255, 255, 255, 0.55); text-align: left; }
+  td { color: rgba(255, 255, 255, 0.85); }
+}

@@ -1,5 +1,6 @@
 import { useGsapAnimation } from '../../hooks/useGsapAnimation'
 import type { Artwork } from '../../store/artworksSlice'
+import BuyButton from '../BuyButton/BuyButton'
 import styles from './ArtworkSection.module.scss'
 
 interface Props {
@@ -56,6 +57,7 @@ export default function ArtworkSection({ artwork, index }: Props) {
               />
             ))}
           </div>
+          <BuyButton artwork={artwork} />
         </div>
       </div>
     </section>

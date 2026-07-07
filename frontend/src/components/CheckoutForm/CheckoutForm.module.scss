@@ -1,0 +1,135 @@
+.page {
+  min-height: 100vh;
+  background: #060606;
+  color: rgba(255, 255, 255, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 1.5rem 3rem;
+}
+
+.form {
+  width: 100%;
+  max-width: 540px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.heading {
+  font-size: 0.85rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  font-weight: 300;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+label {
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+input, select {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.92);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-family: inherit;
+
+  &:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.45);
+  }
+
+  &::placeholder { color: rgba(255, 255, 255, 0.3); }
+}
+
+.errorText {
+  color: rgba(255, 140, 140, 0.95);
+  font-size: 0.7rem;
+}
+
+.invalid {
+  border-color: rgba(255, 140, 140, 0.7) !important;
+}
+
+.summary {
+  margin: 0.5rem 0 1rem;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+
+  th, td {
+    padding: 0.35rem 0;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  th { text-align: left; font-weight: 400; }
+  td { text-align: right; }
+
+  tr:last-child th, tr:last-child td {
+    font-size: 0.95rem;
+    color: #fff;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 0.6rem;
+  }
+}
+
+.payButton {
+  padding: 0.95rem 1rem;
+  background: rgba(255, 255, 255, 0.92);
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 500;
+
+  &:hover:not(:disabled) { background: #fff; }
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+}
+
+.errorBanner {
+  background: rgba(255, 100, 100, 0.12);
+  border: 1px solid rgba(255, 100, 100, 0.4);
+  color: rgba(255, 180, 180, 0.95);
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.cancel {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  text-decoration: none;
+  &:hover { color: rgba(255, 255, 255, 0.85); }
+}

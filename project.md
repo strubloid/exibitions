@@ -1,389 +1,300 @@
-# Project Plan: Full-Stack Art Showcase Web Application
+# Project Plan: Exibitions — Full-Stack Art Showcase Web Application
 
 ## Overview
-A production-ready, containerized, full-stack art exhibition platform for immersive, scroll-driven storytelling. Built for high performance, security, and a luxury gallery experience.
+A production-ready, containerized, full-stack art exhibition platform for immersive, scroll-driven storytelling. Built for high performance, security, and a luxury gallery experience. Visitors browse exhibitions on a single-page vertical scroll site; each exhibition contains an intro cover, a background section, a press/clippings section, and a scroll-driven poem gallery of artworks.
+
+**Live production:** https://exibit.strubloid.com
+**Local development:** http://localhost:8080
 
 ---
 
 ## Stack & Architecture
-- **Frontend:** React 19 + TypeScript + Vite
-- **Animation:** GSAP (ScrollTrigger)
-- **Styling:** SCSS Modules (mobile-first, responsive)
-- **State:** Redux Toolkit
-- **Backend:** Laravel 11 (PHP 8.3)
-- **Database:** PostgreSQL
-- **Containerization:** Docker + Docker Compose
+- **Frontend:** React 19 + TypeScript + Vite 7 + React Router 7
+- **State:** Redux Toolkit (artworks, exhibitions, auth slices)
+- **Animation:** GSAP + ScrollTrigger (clip-path iris transitions, parallax, scroll-driven poem viewer, card slide-ins with golden shimmer)
+- **Styling:** SCSS Modules (mobile-first, responsive), custom PNG cursor, edge vignette, film grain
+- **Backend:** Laravel 11 (PHP 8.3) — RESTful JSON API
+- **Auth:** Laravel Sanctum (token-based admin auth)
+- **Database:** PostgreSQL 16
+- **Image processing:** GD (server-side WebP conversion, dual-quality full + compressed, dominant-color palette extraction)
 - **Reverse Proxy:** Nginx
-- **API:** RESTful JSON
-- **Image:** Lazy load, WebP, GPU-accelerated
+- **Containerization:** Docker + Docker Compose (dev), single-image multi-stage Dockerfile (production)
+- **Process manager:** Supervisord (nginx + php artisan serve in one fly.io machine)
+- **Deployment:** Fly.io (single machine, 1GB RAM, 10GB persistent volume)
 
 ---
 
 ## Folder Structure
-- `/frontend` — React app
-- `/backend` — Laravel app
-- `/nginx` — Nginx config
-- `/project-knowledge/site-context.json` — Persistent site context
-- `docker-compose.yml` — Orchestration
-- `.env` — Shared config
-
----
-
-## Features
-- One-page vertical scroll art experience
-- Each artwork: 100vh, scroll-animated, masked crop, center reveal, cinematic transition
-- GSAP + ScrollTrigger: mask, parallax, inertia, scale, fade, 3D transform
-- Responsive: mobile, tablet, desktop, 4K, touch-optimized
-- Admin login (Sanctum), CRUD for artworks, image upload
-- PostgreSQL: artworks, users (admin), site_settings
-- Secure: CORS, env protection
-- Performance: code splitting, lazy load, Lighthouse >90
-- Dev: hot reload, Laravel queue, Docker up/build, clear README
+```
+/
+├── frontend/                 React + Vite SPA
+│   ├── src/
+│   │   ├── App.tsx           Routes (/, /exhibition/:slug, /login, /admin)
+│   │   ├── main.tsx          Redux Provider + root render
+│   │   ├── components/
+│   │   │   ├── Exhibitions/    Homepage — full-screen exhibition sections
+│   │   │   ├── ExhibitionView/  Individual exhibition page
+│   │   │   ├── Gallery/         Scroll-driven poem gallery engine
+│   │   │   ├── AdminPanel/      CRUD admin UI (artworks + exhibitions)
+│   │   │   ├── Login/           Sanctum token login
+│   │   │   ├── ArtworkSection/  Legacy single-artwork section (useGsapAnimation)
+│   │   │   └── CustomCursor/    (empty — reserved)
+│   │   ├── store/              Redux slices (artworks, exhibitions, auth)
+│   │   ├── hooks/              useGsapAnimation
+│   │   ├── utils/              extractDominantColor (Canvas API)
+│   │   └── styles/             global.scss
+│   ├── vite.config.ts         Proxy /api → backend:8000
+│   └── package.json
+├── backend/                  Laravel 11 app
+│   ├── app/
+│   │   ├── Http/Controllers/  Artwork, Exhibition, Auth
+│   │   ├── Models/            Artwork, Exhibition, User, SiteSetting
+│   │   └── Console/Commands/  Export-to-seeder commands
+│   ├── database/
+│   │   ├── migrations/        10 migrations (users, cache, jobs, artworks, exhibitions, pivot, tokens, settings, compressed images, background+clippings)
+│   │   └── seeders/           Admin, Artwork, Exhibition
+│   ├── routes/api.php
+│   ├── config/                Laravel + Sanctum config
+│   ├── Dockerfile             Dev image (scaffolds Laravel on first run)
+│   ├── entrypoint.sh          Dev entrypoint
+│   └── composer.json
+├── nginx/
+│   ├── default.conf           Dev proxy (frontend:5173, backend:8000)
+│   └── production.conf        Production (static SPA + proxy to 127.0.0.1:8000)
+├── Dockerfile                 Multi-stage: React build → nginx + PHP + supervisord
+├── docker-compose.yml         Dev orchestration (nginx, frontend, backend, db)
+├── entrypoint.production.sh   Fly.io entrypoint (writes .env, runs migrations/seeds, starts supervisord)
+├── supervisord.conf           nginx + php artisan serve
+├── fly.toml                   Fly.io app config (region iad, port 80, 1GB VM, 10GB volume)
+├── .env.example               Shared config template
+└── project.md                This file
+```
 
 ---
 
 ## Database Schema (PostgreSQL)
-- **users**: id, name, email, password, is_admin, timestamps
-- **artworks**: id, title, description, image, order, animation_style, metadata (JSON), timestamps
-- **site_settings**: id, key, value, timestamps
+
+### `users`
+- id, name, email (unique), email_verified_at, password, is_admin (bool), remember_token, timestamps
+
+### `artworks`
+- id, title, description (text, nullable), image (nullable), image_compressed (nullable), sort_order (int, default 0), animation_style (default 'fade'), metadata (JSON, nullable — stores `palette` array), timestamps
+
+### `exhibitions`
+- id, name, description (text, nullable), background (text, nullable), clippings (JSON, nullable — array of `{title, screenshot_image}`), slug (unique), cover_image (nullable), cover_image_compressed (nullable), sort_order (int, default 0), timestamps
+
+### `artwork_exhibition` (pivot)
+- exhibition_id (FK, cascade delete), artwork_id (FK, cascade delete), sort_order (int, default 0)
+- Primary key: (exhibition_id, artwork_id)
+
+### `site_settings`
+- id, key (unique), value (text, nullable), timestamps
+
+### Laravel default tables
+- `personal_access_tokens` (Sanctum), `cache`, `cache_locks`, `jobs`, `job_batches`, `failed_jobs`, `sessions`, `password_reset_tokens`
 
 ---
 
-## API Endpoints (Backend)
-- `POST /api/login` — Admin login
-- `POST /api/artworks` — Create artwork
-- `PUT /api/artworks/{id}` — Update artwork
-- `DELETE /api/artworks/{id}` — Delete artwork
-- `POST /api/artworks/{id}/image` — Upload image
-- `GET /api/artworks` — List artworks
+## API Endpoints
+
+### Public
+| Method | Path | Description |
+|--------|------|-------------|
+| GET  | `/api/artworks`           | List all artworks (ordered by sort_order) |
+| GET  | `/api/exhibitions`        | List all exhibitions (ordered by sort_order) |
+| GET  | `/api/exhibitions/{slug}` | Get single exhibition with its artworks (via pivot, ordered by sort_order) |
+| POST | `/api/login`              | Admin login, returns Sanctum token |
+
+### Admin (requires `Authorization: Bearer <token>`)
+| Method | Path | Description |
+|--------|------|-------------|
+| POST  | `/api/logout`                          | Revoke current token |
+| POST  | `/api/artworks`                        | Create artwork |
+| PUT   | `/api/artworks/{artwork}`              | Update artwork |
+| DELETE| `/api/artworks/{artwork}`              | Delete artwork |
+| POST  | `/api/artworks/{artwork}/image`        | Upload image — converts to WebP (Q85 full + Q60 compressed ≤1200px), extracts palette, updates metadata |
+| POST  | `/api/exhibitions`                     | Create exhibition (slug auto-generated from name if not provided) |
+| PUT   | `/api/exhibitions/{exhibition}`        | Update exhibition (name, description, background, clippings, slug, sort_order) |
+| DELETE| `/api/exhibitions/{exhibition}`        | Delete exhibition |
+| POST  | `/api/exhibitions/{exhibition}/image`  | Upload cover image — WebP full + compressed |
+| POST  | `/api/exhibitions/{exhibition}/clipping-screenshot` | Upload clipping screenshot as WebP |
+| POST  | `/api/exhibitions/{exhibition}/artworks` | Sync artworks to exhibition (pivot with sort_order) |
+
+### Artisan commands
+- `php artisan artworks:export-seeder` — export current artworks to seeder-format PHP array
+- `php artisan artworks:export-exibitions` — export current exhibitions to seeder-format PHP array
 
 ---
 
 ## Frontend Components
-- **App** — Root
-- **Gallery** — Scroll container
-- **ArtworkSection** — 100vh, GSAP-animated
-- **ImageMask** — Dynamic mask/clip-path
-- **AdminPanel** — CRUD UI
-- **Login** — Admin auth
-- **ResponsiveLayout** — Adaptive breakpoints
+
+### App.tsx — Routing
+- `/`                → Exhibitions (homepage)
+- `/exhibition/:slug`→ ExhibitionView (lazy-loaded)
+- `/login`           → Login (lazy-loaded)
+- `/admin`           → AdminPanel (lazy-loaded, ProtectedRoute requires auth token)
+
+### Exhibitions (Homepage)
+- Fetches all exhibitions via Redux (`fetchExhibitions`)
+- If no exhibitions exist, falls back to global artworks Gallery
+- Each exhibition renders as a full-screen (100vh) section:
+  - Cover image with parallax (GSAP yPercent -8 → 8)
+  - Staggered text entrance (index counter, name, short description, "Enter →" CTA)
+  - Background button → smooth-scrolls to background card section
+  - Press button → smooth-scrolls to clipping card section
+  - Click navigates to `/exhibition/:slug`
+- Background section: sticky pattern, masonry grid of text cards (split by `\n`), dominant-color background extracted from cover image, cards slide in from alternating sides with golden shimmer sweep + brightness fade-in
+- Press section: sticky pattern, masonry grid of clipping cards (title + screenshot image), click opens modal with full screenshot
+- Mobile (< 768px): cards animate in rows of 3, shorter scroll distances
+
+### ExhibitionView (individual exhibition page)
+- Fetches single exhibition by slug via Redux (`fetchExhibition`)
+- Renders: intro (cover + name + description + scroll CTA) → Gallery (artworks) → background section → clippings section
+- Background section identical design to homepage but with scroll-driven rainbow background (hue 0→360 via HSL)
+- Clippings section also gets scroll-driven rainbow background
+- Clipping click opens modal
+
+### Gallery (Cinematic Poem Engine)
+- Single sticky viewport; all artwork images stacked as absolute layers
+- Container height = N × (per-artwork scroll space) computed dynamically
+- Scroll timing knobs (desktop): 80vh per image transition, 7vh settle before poem, 8vh per poem line
+- Mobile knobs: 40vh transition, 3vh settle, 4vh per poem line
+- Transition directions alternate every 4 artworks: vertical iris (collapse to horizontal center line) → horizontal iris (collapse to vertical center line)
+- Each transition: clip-path collapse/expand, inner image scale breath (1.05→1 enter, 1→0.97 exit), info fade+y
+- Parallax hold phase: inner image drifts yPercent 1.5 → -1.5 during full visibility
+- Color fog: body background cross-fades to artwork's palette[0] color on entry
+- Poem viewer: artwork description split into lines by `\n`, blank lines collapse to single spacers, stanzas form naturally. Up to 7 lines visible simultaneously with opacity gradient (active 100%, neighbors 50%→25%→0%), active line scaled 1.3×, scroll advances current line, snap to real lines only (disabled on mobile)
+- Mobile (< 768px): simplified opacity cross-fades replace clip-path iris, no scroll snapping, no swipe-to-jump, reduced scroll distances
+- `prefers-reduced-motion`: same simplified animations
+- Touch swipe jump-to-nearest-artwork enabled only on non-mobile touch devices (tablets)
+
+### AdminPanel
+- Two tabs: Artworks and Exhibitions
+- Artworks tab: create/edit/delete artworks, upload image (auto WebP + palette extraction), sort order, animation style (fade | mask-reveal | parallax)
+- Exhibitions tab: create/edit/delete exhibitions, cover image upload, background textarea, clippings manager (title + paste-from-clipboard screenshot as base64), slug (auto if empty), sort order, artwork assignment panel with checkboxes + per-artwork sort order
+- All operations show success/error toast (3-second auto-dismiss)
+- Image cache-busting on thumbnails (`?t=${updated_at}&r=${random}`)
+
+### Login
+- Sanctum token login form, stores token in localStorage (`admin_token`), redirects to /admin on success
+
+### ArtworkSection (legacy)
+- Single artwork section with `useGsapAnimation` hook (mask-reveal / parallax / fade)
+- Used only by older code paths; Gallery supersedes it
 
 ---
 
-## Animation Logic (GSAP)
-- Masked crop follows scroll
-- Centered image reveal (scale 1.2→1, fade, 3D)
-- Parallax layers
-- requestAnimationFrame for smoothness
-- GPU-accelerated transforms
+## Image Handling
+- Server-side GD conversion: JPEG/PNG/WebP → WebP
+- Artworks: full-quality WebP (Q85) + compressed WebP (≤1200px longest edge, Q60), stored at `/storage/artworks/{id}.webp` and `{id}-compressed.webp`
+- Exhibitions: cover image full + compressed, stored at `/storage/exhibitions/exhibition-{id}.webp`
+- Clippings: screenshot WebP at `/storage/exhibitions/clippings/`
+- Palette extraction: GD samples 3 zones (full image, center crop, bottom third), each reduced to 1×1 pixel, returns `['#rrggbb', ...]` stored in `artworks.metadata.palette`
+- Frontend `extractDominantColor`: Canvas API downsample to 50×50, average all pixels, darkened 30% for background contrast
+- Image cache-busting on admin thumbnails
 
 ---
 
-## Nginx
-- Reverse proxy: `/api` → backend, `/` → frontend
-- Serve static assets
+## Docker & Deployment
+
+### Local Development (docker-compose)
+```
+docker-compose up --build
+```
+- **URL:** http://localhost:8080  (nginx maps host port 8080 → container 80)
+- Services:
+  - **nginx** — reverse proxy: `/` → frontend:5173, `/api` and `/storage` → backend:8000
+  - **frontend** — node:20-alpine, `npm install && npm run dev` (Vite dev server on 5173), proxies `/api` → backend:8000
+  - **backend** — builds from backend/Dockerfile, entrypoint.sh scaffolds Laravel on first run, runs migrations + seeders, starts `php artisan serve` on 8000
+  - **db** — postgres:16-alpine, credentials from .env
+- Volumes: db-data (Postgres), storage-data (uploaded images)
+- Hot reload: frontend via Vite HMR, backend via bind mount
+
+### Production (fly.io — single multi-stage image)
+- **Dockerfile**: Stage 1 builds React frontend (`npm run build` → dist/), Stage 2 is php:8.3-cli with nginx + supervisord
+- **entrypoint.production.sh**: parses `DATABASE_URL` into individual vars, writes `/app/.env` from fly.io secrets, runs `migrate` + `db:seed`, starts supervisord (nginx + php artisan serve)
+- **nginx/production.conf**: serves React SPA from `/usr/share/nginx/html` (try_files → index.html for SPA routing), proxies `/api` and `/storage` to `127.0.0.1:8000`
+- **fly.toml**: app `exibitions`, region `iad`, internal_port 80, force_https, auto_stop/start machines, 1GB RAM shared CPU, 10GB persistent volume at `/app/storage`
+- **Production URL:** https://exibit.strubloid.com
 
 ---
 
-## Docker Compose
-- Services: frontend, backend, db, nginx
-- Volumes: db-data
-- Networks: shared
+## Seeders
+- **AdminUserSeeder**: creates admin user from `ADMIN_EMAIL` / `ADMIN_PASSWORD` env (defaults: admin@exibitions.com / secret)
+- **ArtworkSeeder**: seeds 6 sample artworks (Agony, Arousal, Longing, Recognition, Hope, Fading Away) with poems and palette metadata — only if table empty
+- **ExhibitionSeeder**: seeds 1 sample exhibition (Morte e Vida Severina) — only if table empty
+- **DatabaseSeeder**: calls all three in order
 
 ---
 
-## project-knowledge/site-context.json
-- Website description
-- Design language
-- Animation philosophy
-- Current artworks
-- Layout rules
-- Component architecture
-- API schema summary
+## Environment Variables (.env / .env.example)
 
----
+### App
+- `APP_NAME`, `APP_ENV`, `APP_DEBUG`, `APP_URL`, `APP_TIMEZONE`, `APP_LOCALE`, `APP_KEY`
 
-## Deployment
-- `docker compose up --build`
-- Hot reload (frontend/backend)
-- Persistent DB
-- Secure env
+### Database (local)
+- `DB_CONNECTION` (default pgsql), `DB_HOST` (default db), `DB_PORT` (default 5432), `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`
+
+### Database (fly.io)
+- `DATABASE_URL` — parsed by entrypoint.production.sh
+
+### Postgres container
+- `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`
+
+### Admin
+- `ADMIN_EMAIL`, `ADMIN_PASSWORD`
+
+### Session / Cache / Logging
+- `SESSION_DRIVER` (default file), `SESSION_LIFETIME`, `CACHE_STORE` (default file), `QUEUE_CONNECTION` (default sync), `LOG_CHANNEL` (default stderr), `LOG_LEVEL`
 
 ---
 
 ## Design Aesthetic
-- Minimal, dark luxury
-- Cinematic, spatial, high-end gallery
-- No external SaaS
+- Minimal, dark luxury — black background (#000), Georgia serif font, white text
+- Cinematic, spatial, high-end gallery feel
+- Edge vignette (radial gradient, softer on mobile)
+- Custom PNG cursor
+- Per-artwork dominant color cross-fades the background fog
+- Golden shimmer sweeps across background/clipping cards as they slide in
+- No external SaaS dependencies
 
 ---
 
-## Phases
+## Phases (historical record — all completed)
 
 ### Phase 1 — Hello World on fly.io ✅
-- Static HTML page: "Hello Exibitions"
-- Served via Nginx in Docker
-- Deployed to fly.io
-- Goal: prove the live deployment pipeline works
-
 ### Phase 2 — Docker Compose + Project Skeleton ✅
-- Set up `/frontend`, `/backend`, `/nginx` folders
-- `docker-compose.yml` with frontend, backend, db, nginx services
-- `.env` shared config
-- Hot reload working locally
-
 ### Phase 3 — React + Vite Frontend Scaffold ✅
-- React 19 + TypeScript + Vite
-- SCSS Modules setup
-- Basic routing / single page shell
-- Redux Toolkit wired up
-
 ### Phase 4 — Laravel Backend Scaffold ✅
-- Laravel 11 + PHP 8.3
-- PostgreSQL connection
-- Sanctum auth configured
-- Basic API routes responding
-
 ### Phase 5 — Database Schema & Migrations ✅
-- `users`, `artworks`, `site_settings` tables
-- Seeders for initial admin user and sample artworks
-- API endpoints returning real data
-
 ### Phase 6 — Gallery UI (Static Content) ✅
-- `Gallery` + `ArtworkSection` components
-- 100vh sections, responsive layout
-- Static artwork data rendered
-
 ### Phase 7 — GSAP Animations ✅
-- ScrollTrigger: mask, parallax, scale, fade, 3D
-- GPU-accelerated transforms
-- Mobile/touch optimized
-
 ### Phase 8 — Image Handling ✅
-- Image upload endpoint
-- WebP conversion via GD (512M PHP memory limit)
-- Lazy loading, optimized delivery
-
 ### Phase 9 — Admin Panel ✅
-- Login page (Sanctum token auth)
-- CRUD for artworks (create, update, delete)
-- Image upload UI per artwork
-- Protected route with localStorage token persistence
-
 ### Phase 10 — Production Polish ✅
-- Code splitting: Login + AdminPanel lazy-loaded
-- index.html: proper title, meta description, theme-color
-- Production fly.io deploy with all services
-
----
-
 ### Phase 11 — Cinematic Gallery Engine v2 ✅
-- Full rewrite of Gallery: single sticky viewport, all images stacked as layers
-- Container height = N × 250vh (each artwork owns 250vh of scroll real estate)
-- Each image layer: `position: absolute; inset: 0; will-change: clip-path`
-- GSAP ScrollTrigger scrub per enter/exit pair with `scrub: 1.5` for silky control
-- Z-index choreography: entering image rises above exiting during transition window
-- Parallax hold phase: inner image drifts 2% up/down while fully visible
-
 ### Phase 12 — Center-Detach Transition System ✅
-- **Core mechanic**: clip-path collapses image to a center strip, new image expands from same strip
-- **Vertical transitions** (`inset(50% 0% 50% 0%)`): image collapses top+bottom to a horizontal center line, next image opens from that same line outward — like a vertical iris
-- **Horizontal transitions** (`inset(0% 50% 0% 50%)`): image collapses left+right to a vertical center line, next image opens outward — like a horizontal iris
-- **Alternating pattern**: 4 vertical → 4 horizontal → 4 vertical → repeat (driven by `Math.floor(i / 4) % 2`)
-- Inner layer 3D roll: rotateX ±6° (vertical) or rotateY ±6° (horizontal) with `transformPerspective: 1200`
-- Blur pulse: entering image blurs (5px → 0px), exiting image blurs (0px → 3px)
-- Scale breath: entering image 1.07 → 1.0 (zoom in to settled), exiting 1.0 → 0.96 (slight shrink)
-
 ### Phase 13 — Info Layer & Typography ✅
-- Artwork title and description overlaid at bottom-left, `position: absolute`
-- Gradient mask: `linear-gradient(to top, rgba(0,0,0,0.85), transparent)`
-- Title: `font-weight: 300`, large, tracked — cinematic caption feel
-- Index number (`01`, `02`…) in muted uppercase above title
-- Fade in: `opacity 0→1, y 24→0` during last 30% of enter transition
-- Fade out: `opacity 1→0, y 0→-16` at start of exit transition
-
 ### Phase 14 — Exhibitions Feature ✅
-- New `exhibitions` DB table: id, name, description, slug, cover_image, sort_order, timestamps
-- New `artwork_exhibition` pivot: exhibition_id, artwork_id, sort_order
-- API: `GET /api/exhibitions`, `GET /api/exhibitions/{slug}` (returns artworks within)
-- Admin: create/edit/delete exhibitions, assign & reorder artworks per exhibition
-- Gallery: browse exhibitions list → enter exhibition → scrolls through its artworks
-- Exhibition intro screen: full-bleed cover image, title, description, scroll-to-enter CTA
-
 ### Phase 15 — Atmospheric Visual Layer ✅
-- Film grain overlay: animated SVG `<feTurbulence>` filter on a fixed pseudo-element
-- Edge vignette: radial gradient `rgba(0,0,0,0.6)` outward from center
-- Per-artwork dominant color extracted from image (stored in `metadata.palette`)
-- Subtle background color cross-fade between artworks (not on image — on `<body>` or overlay)
-- Cursor: custom dot cursor that reacts to scroll velocity (scale 1→1.6 when fast)
-
 ### Phase 16 — Mobile & Touch Experience ✅
-- Touch swipe detection: vertical swipe advances artwork (threshold: 80px)
-- Horizontal swipe: horizontal-transition artworks respond to horizontal swipe
-- Reduced motion: `@media (prefers-reduced-motion: reduce)` — disable clip-path transitions, use opacity fade instead
-- Mobile typography: smaller title, description hidden on phones under 480px
-- iOS momentum scroll: `ScrollTrigger.normalizeScroll(true)` on touch devices
-
 ### Phase 17 — Full-Viewport Exhibitions Homepage ✅
-- Each exhibition on the homepage fills the full screen (100vh) with its cover image
-- Native vertical scroll moves from one full-screen exhibition to the next
-- GSAP parallax: cover image drifts subtly as you scroll past each section
-- Staggered text entrance: index counter, title, description, and "Enter" CTA animate in as each section enters the viewport
-- Cover image fills the entire viewport (`object-fit: cover`), title large at bottom-left, CTA at bottom-right
-- Hover: image scales slightly, CTA brightens
-
 ### Phase 18 — Scroll-Driven Poem / Description Viewer ✅
-- The artwork description is treated as a poem or lyric — split into individual lines by newline (`\n`)
-- Lines are grouped into stanzas of 4 lines each; blank lines between groups create visible stanza spacing
-- As the user scrolls through the artwork's 250vh, the "current line" advances through the poem
-- At any scroll position, up to 7 lines are visible simultaneously, centered vertically on screen:
-  - Line -3 (above): ~8% opacity — exists but unreadable, peripheral awareness
-  - Line -2: ~10% opacity
-  - Line -1: ~15% opacity — previous line, fading into memory
-  - **Current line (center)**: ~100% opacity, bright white — the line being read now
-  - Line +1 (below): ~15% opacity — coming soon, readable but soft
-  - Line +2: ~10% opacity
-  - Line +3: ~8% opacity — barely a hint of what's next
-- As scroll advances: current line fades up into the "past" opacity chain, next line rises to full white
-- The poem display lives in the center of the sticky viewport, overlaid on the artwork image
-- The title/index info remains at bottom-left; the poem occupies the vertical center of the screen
-- Admin: no changes needed — the existing `description` field on each artwork stores the poem text, with stanza breaks written as blank lines between groups of 4 lines
-- **Refinements**:
-  - Line height set to 90px for better readability
-  - Blank spacers (BlankLinesBeforePoem: 5, BlankLinesAfterPoem: 30) rendered as DOM elements, fully part of scroll mechanics
-  - Scroll animation extends through all spacer elements, allowing comfortable reading of last line before transition
-  - Snap points only target real text lines, not spacers
-  - Track Y animation continues past last line to show trailing blank space
-  - Text properly centered with balanced white space before and after
-
 ### Phase 18.5 — Admin Panel: Exhibitions CRUD + Persistent Storage ✅
-- **Admin exhibition management**: Full CRUD UI in AdminPanel for exhibitions (create, edit, delete, cover image upload)
-- **Artwork assignment UI**: Per-exhibition panel to check/uncheck artworks and set sort order
-- **UI feedback system**: Success/error toast messages for all operations (image upload, save, delete) with 3-second auto-dismiss
-- **Database seeders**: Created `ExhibitionSeeder` with sample exhibitions, integrated into `DatabaseSeeder`
-- **Export command**: New Artisan command `php artisan artworks:export-exibitions` to export current exhibitions to seeder format
-- **Docker persistent storage**: Added `storage-data` volume in `docker-compose.yml` mounted at `/app/storage`
-- **Nginx static file serving**: Updated `/storage` location to serve `alias /app/storage/app/public` with 30-day cache headers instead of proxying to backend
-- **Fly.io volume setup**: Added `[mounts]` section in `fly.toml` with 10GB persistent volume at `/app/storage`
-- **High-availability deployment**: Scaled to 2 machines on fly.io with automatic volume replication (both machines now have 553 MB of synced image data)
-- **Image cache-busting**: Added query parameters to image URLs (`${artwork.image}?t=${artwork.updated_at}&r=${Math.random()}`) to ensure fresh images load after upload
-
----
-
-## NEXT PHASE
-
 ### Phase 19 — Exhibition Detail: Background & Press Clippings ✅
-**Layout Design:**
-- Full-screen background sections and press sections displayed on **homepage** as part of continuous scrolling experience
-- Each exhibition on homepage: intro/cover → background section → press section → (then continues to next exhibition)
-- Full-screen background section with **centered text card** + **dynamic color background** (extracted from cover image)
-- Full-screen press section with **masonry grid** of clipping cards (2-3 columns responsive)
-- Individual exhibition page at `/exhibitions/{slug}` shows only intro + gallery (no background/press)
+### Phase 20 — Mobile Experience Overhaul ✅
 
-**Database & Backend:**
-- Migration: `background` (text, nullable) and `clippings` (JSON, nullable) columns on exhibitions ✅
-- Clippings simplified to 2 fields: `title` + `screenshot_image` (base64 data URL pasted from clipboard) ✅
-- Validation: title required, screenshot_image nullable string (accepts base64) ✅
-
-**Admin Panel:**
-- Background textarea (5 rows, preserves line breaks with white-space: pre-wrap) ✅
-- Clippings manager: title input + paste area for screenshots (Ctrl+V clipboard paste) ✅
-- Converts pasted images to base64, stores in screenshot_image field ✅
-- Success/error toast notifications with 3-second auto-dismiss ✅
-
-**Frontend - Homepage (Exhibitions.tsx):**
-- ClippingEntry interface: `{ title: string; screenshot_image: string | null }` ✅
-- Exhibitions component renders: intro → background → press for each exhibition ✅
-- Background section: full-screen with masonry grid layout ✅
-  - Large exhibition name as watermark background (15vw font, 4% opacity, uppercase)
-  - Text content split by double newlines (`\n\n`) into masonry grid cards
-  - Frosted glass cards with backdrop blur, semi-transparent borders
-  - Responsive grid: 3-4 columns desktop, 3 tablet, auto-fit mobile (minmax 220px)
-  - Varied card heights via `nth-child()` selectors for visual rhythm and interest
-  - Hover effect: card brightens, lifts slightly (2px translateY)
-  - Dynamic background color from dominant image color
-- Press section: full-screen height, masonry grid layout (1-3 columns responsive) ✅
-- Color extraction: Canvas API utility `extractDominantColor()` darkens colors 30% for contrast ✅
-- All sections stacked vertically with smooth transitions
-
-**Frontend - Individual Page (ExhibitionView.tsx):**
-- Shows: intro → gallery → **background section** (at the end) ✅
-- Background section identical design to homepage with:
-  - Large exhibition name watermark
-  - Masonry grid of text paragraphs (split by `\n\n`)
-  - Dynamic dominant color from cover image
-  - Frosted glass cards with hover effects
-- Press section NOT shown on individual pages (only on homepage) ✅
-
-### Phase 20 — Mobile Experience Overhaul
-**Problem:** Real user feedback reports that the mobile experience is frustrating and borderline unusable.
-
-**Task 1 — Disable or simplify animations on mobile** ✅
-- Animations (clip-path transitions, blur pulses, 3D rolls, scale breath) are perceived as "plain annoying" on small screens
-- On mobile (< 768px), uses simple opacity cross-fades instead of cinematic iris transitions
-- Film grain animation disabled on mobile (static, reduced opacity)
-- Vignette softened on mobile to avoid darkening edges excessively
-- `isMobileViewport()` helper + `useSimpleAnimations` flag in Gallery.tsx
-
-**Task 2 — Improve mobile text readability** ✅
-- Increased font sizes: title (`clamp(1.8rem, 6vw, 2.8rem)`), index (0.75rem), description (0.95rem)
-- Added text shadows on titles and poem lines for contrast over images
-- Stronger info gradient overlay on mobile (92% → 65% → transparent)
-- Boosted opacity on index (55%) and description (65%) text
-- Poem lines: larger on mobile (`clamp(1.1rem, 4vw, 1.6rem)`), selected (`clamp(1.3rem, 5vw, 2rem)`)
-
-**Task 3 — Fix mobile scroll behavior** ✅
-- Disabled `ScrollTrigger.normalizeScroll(true)` on mobile — it was fighting native touch scrolling
-- Disabled swipe-to-jump handler on mobile — it was hijacking normal scroll gestures
-- Disabled scroll snapping on poem lines for mobile — snap points caused jarring jumps
-- Reduced scroll distance per poem line on mobile: `ScrollVhPerPoemLineMobile = 4` (vs 8 on desktop)
-- Shortened image transition scroll on mobile: `ImageTransitionScrollVhMobile = 40` (vs 80 on desktop)
-- Shorter settle-before-poem on mobile: `SettleBeforePoemVhMobile = 3` (vs 7 on desktop)
-
-**Task 4 — Allow text selection on poem lines (mobile)** ✅
-- Enabled `pointer-events: auto` on `.poemWindow` on mobile
-- `.poemLine` already has `user-select: text` and `pointer-events: auto`
-
-**Task 5 — Fix poem text overflow / word clipping** ✅
-- Poem track width reduced from 90% to 76% (desktop) / 74% (mobile) to account for `scale(1.3)` on active line
-- Changed `.poemLine` from `overflow: visible` to `overflow: hidden` with `overflow-wrap: break-word`
-- Added horizontal padding (`0.5em`) to prevent text touching edges
-- Removed `max-width: 70vw/90vw` on selected line — now uses `width: 100%` of parent track (which is already constrained)
-- All text stays within viewport bounds at any scale factor
-
-**Task 6 — Fix grids to 1 column on mobile** ✅
-- Background masonry grid and clippings grid now use `grid-template-columns: 1fr` below 600px
-- Applied in both Exhibitions.module.scss and ExhibitionView.module.scss
-- Above 600px: auto-fit with minmax(240px); above 768px: 3 columns; above 1024px: 4 columns
-
-**Task 7 — Reduce card padding and remove min-height on mobile** ✅
-- Cards (background masonry items + clipping cards) had `padding: 2rem 1.5rem` and `min-height: 140–200px`
-- On mobile (< 600px): reduced to `padding: 1rem` and `min-height: auto` — cards now size to content
-- Applied across all four card classes in Exhibitions.module.scss and ExhibitionView.module.scss
-
-**Task 8 — Redesign mobile background section: horizontal 3-per-row cards** ✅
-- Grids now use `grid-template-columns: repeat(3, 1fr)` below 600px (was single column)
-- GSAP scroll animation groups cards by row of 3 — all 3 cards in a row share the same scroll timing
-- Mobile scroll per row: 20vh slide + 15vh shimmer (vs 30+30 per individual card on desktop)
-- Mobile settle before cards: 10vh (vs 20vh desktop)
-- Card padding reduced to `0.6rem 0.5rem` and text to `0.7rem` on mobile for compact display
-- Applied to both Exhibitions.tsx/scss and ExhibitionView.tsx/scss
-
-### Phase 21 — Preloading & Performance
+### Phase 21 — Preloading & Performance (planned)
 - Prefetch next artwork image: `<link rel="prefetch">` injected dynamically after current image loads
 - Intersection Observer to mount/unmount distant layers (> ±2 from active)
 - Vite `build.rollupOptions.output.manualChunks` to split GSAP into its own chunk
 - `will-change: clip-path, transform` on transitioning layers, removed after transition ends
 - Lazy hydration: artwork info text deferred until image enters viewport
 
-### Phase 22 — Final Production Deploy
+### Phase 22 — Final Production Deploy (planned)
 - All services running on fly.io with Postgres
 - `flyctl secrets set` for all production env vars
 - Custom domain + SSL via fly.io certs
 - Lighthouse audit: Performance ≥ 90, Accessibility ≥ 90, SEO ≥ 90
 - Error boundary wrapping Gallery and AdminPanel
 - `fly.toml` health check endpoint verified
-
----
-
-# Add images, artworks, and further details as the project evolves.

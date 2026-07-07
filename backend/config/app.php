@@ -56,6 +56,16 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Frontend URL (for checkout redirects + open-redirect guard)
+    |--------------------------------------------------------------------------
+    | Used by StoreCheckoutRequest to validate that success_url starts with
+    | the configured frontend origin, and by CheckoutController to build the
+    | cancel_url. Keep in sync with the public URL your frontend is served on.
+    */
+    'frontend_url' => env('FRONTEND_URL', 'http://localhost:5173'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

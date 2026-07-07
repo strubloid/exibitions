@@ -9,6 +9,9 @@ export interface Artwork {
   sort_order: number
   animation_style: string
   metadata: { palette?: string[] } | null
+  price_cents: number | null
+  currency: string | null
+  is_available: boolean
   created_at: string
   updated_at: string
 }

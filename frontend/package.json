@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.11.2",
+    "@stripe/stripe-js": "^4.10.0",
     "gsap": "^3.12.5",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
